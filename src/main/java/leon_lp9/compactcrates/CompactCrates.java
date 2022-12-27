@@ -1,39 +1,48 @@
 package leon_lp9.compactcrates;
 
-import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
-import java.io.IOException;
 
 public final class CompactCrates extends JavaPlugin {
 
+    private static CompactCrates instance;
 
     File newConfig;
     FileConfiguration newConfigz;
 
-    public void onEnable(){
-        createNewConfig();
+    File languageConfig;
+    FileConfiguration languageConfigz;
 
-        getChestConfig().set("test", "test");
-        getConfig().set("test", "test");
+    public void onEnable(){
+        instance = this;
+        createNewConfig();
     }
 
 
     public void onDisable(){
-        saveConfig();
-        saveNewConfig();
+        // Plugin shutdown logic
     }
 
     public void createNewConfig(){
         newConfig = new File(getDataFolder(), "chests.yml");
         newConfigz = YamlConfiguration.loadConfiguration(newConfig);
-        saveNewConfig();
+
+        languageConfig = new File(getDataFolder(), "language.yml");
+        languageConfigz = YamlConfiguration.loadConfiguration(languageConfig);
+
+        //getChestConfig().set("test", "test");
+        //getConfig().set("test", "test");
+        getLanguageConfig().set("prefix", "&e&lCompactCrates &8» &7");
+
+        saveChestsConfig();
+        saveLanguageConfig();
+        saveConfig();
     }
 
-    public void saveNewConfig(){
+    public void saveChestsConfig(){
         try{
             newConfigz.save(newConfig);
 
@@ -42,8 +51,24 @@ public final class CompactCrates extends JavaPlugin {
         }
     }
 
+    public void saveLanguageConfig(){
+        try {
+            languageConfigz.save(languageConfig);
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+    }
+
     public FileConfiguration getChestConfig(){
         return newConfigz;
+    }
+
+    public FileConfiguration getLanguageConfig(){
+        return languageConfigz;
+    }
+
+    public static CompactCrates getInstance() {
+        return instance;
     }
 
 
