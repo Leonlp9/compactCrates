@@ -5,3 +5,8 @@ api-version: 1.19
 softdepend: [ Votifer ]
 authors: [ Leon_lp9 ]
 description: A Simple Plugin that makes you Live with Crates easily!
+commands:
+  compactcrates:
+    description: Shows the Plugin Information
+    usage: /compactcrates
+    aliases: [ cc ]
