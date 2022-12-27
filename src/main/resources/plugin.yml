@@ -1,0 +1,7 @@
+name: CompactCrates
+version: '${project.version}'
+main: leon_lp9.compactcrates.CompactCrates
+api-version: 1.19
+softdepend: [ Votifer ]
+authors: [ Leon_lp9 ]
+description: A Simple Plugin that makes you Live with Crates easily!
