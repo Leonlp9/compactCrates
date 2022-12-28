@@ -33,12 +33,20 @@ public class OpenCrate {
 
         ArrayList<ItemStack> items = new ArrayList<>();
 
+        if (!CompactCrates.getInstance().getChestConfig().contains("chestContents." + crateID)) {
+            return new ItemBuilder(Material.BARRIER).setDisplayName("§c§lERROR").build();
+        }
+
         CompactCrates.getInstance().getChestConfig().getConfigurationSection("chestContents." + crateID).getKeys(false).forEach(key -> {
             ItemStack item = CompactCrates.getInstance().getChestConfig().getItemStack("chestContents." + crateID + "." + key);
             if (item != null && item.getType() !=  Material.AIR) {
                 items.add(item);
             }
         });
+
+        if (items.size() == 0) {
+            return new ItemBuilder(Material.BARRIER).setDisplayName("§c§lERROR").build();
+        }
 
         Random random = new Random();
         int randomItem = random.nextInt(items.size());

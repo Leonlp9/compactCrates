@@ -12,6 +12,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.List;
 
 public final class CompactCrates extends JavaPlugin {
 
@@ -38,6 +39,14 @@ public final class CompactCrates extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CratePlaceBreakEvent(), this);
         getServer().getPluginManager().registerEvents(new InventoryManager(), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinEvent(), this);
+
+        //check if votifier is installed
+        if (Bukkit.getPluginManager().getPlugin("Votifier") != null) {
+            getServer().getPluginManager().registerEvents(new VoteEvent(), this);
+            getLogger().info("Votifier found. VoteEvent registered.");
+        }else {
+            getLogger().info("Votifier is not installed. VoteEvent will not be registered.");
+        }
 
         // Spawn Crates
         //Wait for the server to load the world
@@ -105,6 +114,9 @@ public final class CompactCrates extends JavaPlugin {
         }
         if (!getConfig().contains("Particle")) {
             getConfig().set("Particle", "CRIT");
+        }
+        if (!getConfig().contains("VoteRewards")) {
+            getConfig().set("VoteRewards", List.of("give %player% minecraft:diamond 1", "cc admin keys give %player% Default2 1"));
         }
         if (!getChestConfig().contains("cratesTypes")) {
             getChestConfig().set("cratesTypes.Default.Type", "ENDER_CHEST");

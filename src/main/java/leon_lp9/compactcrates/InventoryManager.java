@@ -1,6 +1,9 @@
 package leon_lp9.compactcrates;
 
 import leon_lp9.compactcrates.manager.OpenCrate;
+import net.md_5.bungee.api.chat.BaseComponent;
+import net.md_5.bungee.api.chat.ClickEvent;
+import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -94,7 +97,20 @@ public class InventoryManager implements Listener {
             inventory.setItem(i + 45, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setDisplayName("§7").build());
         }
 
+        //back
         inventory.setItem(49, new ItemBuilder(Material.BARRIER).setDisplayName("§c§lBack").setLocalizedName("back").build());
+
+        //rename
+        inventory.setItem(47, new ItemBuilder(Material.NAME_TAG).setDisplayName("§a§lRename Crate").setLocalizedName("Rename").build());
+
+        //changeType
+        inventory.setItem(45, new ItemBuilder(Material.CONDUIT).setDisplayName("§a§lChangeMaterial").setLocalizedName("ChangeType").build());
+
+        //setSlot
+        inventory.setItem(51, new ItemBuilder(Material.CHEST).setDisplayName("§a§lSet Slot").setLocalizedName("SetSlot").build());
+
+        //delete crate
+        inventory.setItem(53, new ItemBuilder(Material.DIAMOND_SWORD).setDisplayName("§c§lDelete Crate").setLocalizedName("DeleteCrate").build());
 
         player.openInventory(inventory);
     }
@@ -155,6 +171,34 @@ public class InventoryManager implements Listener {
                     if (event.getCurrentItem().getItemMeta().getLocalizedName().equals("back")) {
                         event.setCancelled(true);
                         openFirstInventory(player);
+                    }
+
+                    if (event.getCurrentItem().getItemMeta().getLocalizedName().equals("Rename")) {
+                        event.setCancelled(true);
+                        player.closeInventory();
+
+                        player.sendMessage(CompactCrates.getPrefix() + "§7Command: §a/compactcrates admin renamecrate <CrateID> <newName>");
+                    }
+
+                    if (event.getCurrentItem().getItemMeta().getLocalizedName().equals("ChangeType")) {
+                        event.setCancelled(true);
+                        player.closeInventory();
+
+                        player.sendMessage(CompactCrates.getPrefix() + "§7Command: §a/compactcrates admin changetype <CrateID> <newType>");
+                    }
+
+                    if (event.getCurrentItem().getItemMeta().getLocalizedName().equals("SetSlot")) {
+                        event.setCancelled(true);
+                        player.closeInventory();
+
+                        player.sendMessage(CompactCrates.getPrefix() + "§7Command: §a/compactcrates admin setslot <CrateID> <Slot>");
+                    }
+
+                    if (event.getCurrentItem().getItemMeta().getLocalizedName().equals("DeleteCrate")) {
+                        event.setCancelled(true);
+                        player.closeInventory();
+
+                        player.sendMessage(CompactCrates.getPrefix() + "§7Command: §a/compactcrates admin deletecrate <CrateID>");
                     }
                 }else {
                     event.setCancelled(true);
