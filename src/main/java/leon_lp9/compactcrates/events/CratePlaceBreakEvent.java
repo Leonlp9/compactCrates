@@ -22,33 +22,35 @@ public class CratePlaceBreakEvent implements Listener {
         Player player = event.getPlayer();
 
         if (new ItemChecker(event.getItemInHand()).isLocalizedName("crate")) {
-            event.getPlayer().sendMessage(CompactCrates.getPrefix());
-            event.getPlayer().sendMessage(CompactCrates.getPrefix() + "§aYou have placed a crate!");
-            event.getPlayer().sendMessage(CompactCrates.getPrefix() + "§cRemove§7 it by shift left clicking!");
-            event.getPlayer().sendMessage(CompactCrates.getPrefix() + "§7Right click the crate to open it!");
-            event.getPlayer().sendMessage(CompactCrates.getPrefix());
+            if (player.hasPermission("compactcrates.place")) {
+                event.getPlayer().sendMessage(CompactCrates.getPrefix());
+                event.getPlayer().sendMessage(CompactCrates.getPrefix() + "§aYou have placed a crate!");
+                event.getPlayer().sendMessage(CompactCrates.getPrefix() + "§cRemove§7 it by shift left clicking!");
+                event.getPlayer().sendMessage(CompactCrates.getPrefix() + "§7Right click the crate to open it!");
+                event.getPlayer().sendMessage(CompactCrates.getPrefix());
 
-            Block block = event.getBlockPlaced();
+                Block block = event.getBlockPlaced();
 
-            int getChests = 0;
-            try {
-                getChests = CompactCrates.getInstance().getChestConfig().getConfigurationSection("chestsPositions").getKeys(false).size();
-            }catch (Exception e) {
-                System.out.println(CompactCrates.getPrefix() + "First chest placed!");
+                int getChests = 0;
+                try {
+                    getChests = CompactCrates.getInstance().getChestConfig().getConfigurationSection("chestsPositions").getKeys(false).size();
+                } catch (Exception e) {
+                    System.out.println(CompactCrates.getPrefix() + "First chest placed!");
+                }
+
+                CompactCrates.getInstance().getChestConfig().set("chestsPositions." + getChests + ".world", block.getLocation().getWorld().getName());
+                CompactCrates.getInstance().getChestConfig().set("chestsPositions." + getChests + ".x", block.getLocation().getBlockX());
+                CompactCrates.getInstance().getChestConfig().set("chestsPositions." + getChests + ".y", block.getLocation().getBlockY());
+                CompactCrates.getInstance().getChestConfig().set("chestsPositions." + getChests + ".z", block.getLocation().getBlockZ());
+                CompactCrates.getInstance().getChestConfig().set("chestsPositions." + getChests + ".type", Material.DRIPSTONE_BLOCK.toString());
+                CompactCrates.getInstance().getChestConfig().set("chestsPositions." + getChests + ".name", "&6Default &eCrate &6Name");
+
+                CompactCrates.getInstance().saveChestsConfig();
+
+                SpawnCratesManager.beforCrates.put(event.getBlock().getLocation(), event.getBlock().getType());
+
+                SpawnCratesManager.spawnCrates();
             }
-
-            CompactCrates.getInstance().getChestConfig().set("chestsPositions." + getChests + ".world", block.getLocation().getWorld().getName());
-            CompactCrates.getInstance().getChestConfig().set("chestsPositions." + getChests + ".x", block.getLocation().getBlockX());
-            CompactCrates.getInstance().getChestConfig().set("chestsPositions." + getChests + ".y", block.getLocation().getBlockY());
-            CompactCrates.getInstance().getChestConfig().set("chestsPositions." + getChests + ".z", block.getLocation().getBlockZ());
-            CompactCrates.getInstance().getChestConfig().set("chestsPositions." + getChests + ".type", Material.DRIPSTONE_BLOCK.toString());
-            CompactCrates.getInstance().getChestConfig().set("chestsPositions." + getChests + ".name", "&6Default &eCrate &6Name");
-
-            CompactCrates.getInstance().saveChestsConfig();
-
-            SpawnCratesManager.beforCrates.put(event.getBlock().getLocation(), event.getBlock().getType());
-
-            SpawnCratesManager.spawnCrates();
 
         }
     }

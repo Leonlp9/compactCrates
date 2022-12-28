@@ -2,6 +2,7 @@ package leon_lp9.compactcrates;
 
 import leon_lp9.compactcrates.commands.MainCommand;
 import leon_lp9.compactcrates.events.CratePlaceBreakEvent;
+import leon_lp9.compactcrates.events.PlayerJoinEvent;
 import leon_lp9.compactcrates.manager.ParticleManager;
 import leon_lp9.compactcrates.manager.SpawnCratesManager;
 import org.bukkit.Bukkit;
@@ -36,6 +37,7 @@ public final class CompactCrates extends JavaPlugin {
         // Register Events
         getServer().getPluginManager().registerEvents(new CratePlaceBreakEvent(), this);
         getServer().getPluginManager().registerEvents(new InventoryManager(), this);
+        getServer().getPluginManager().registerEvents(new PlayerJoinEvent(), this);
 
         // Spawn Crates
         //Wait for the server to load the world
@@ -43,6 +45,22 @@ public final class CompactCrates extends JavaPlugin {
             SpawnCratesManager.spawnCrates();
             ParticleManager.start();
         }, 20);
+
+        new UpdateChecker(this, 107018).getVersion(version -> {
+            if (this.getDescription().getVersion().equals(version)) {
+                getLogger().info("There is not a new update available.");
+            } else {
+                getLogger().info("There is a new update available.");
+                Bukkit.getOnlinePlayers().forEach(player -> {
+                    if (player.hasPermission("compactcrates.notify.update")) {
+                        player.sendMessage(getPrefix() + "There is a §enew update§7 available.");
+                        player.sendMessage(getPrefix() + "Your are using version §e" + this.getDescription().getVersion());
+                        player.sendMessage(getPrefix() + "The latest version is §e" + version);
+                        player.sendMessage(getPrefix() + "Download it here: https://www.spigotmc.org/resources/compactcrates.107018/");
+                    }
+                });
+            }
+        });
     }
 
 
@@ -101,6 +119,12 @@ public final class CompactCrates extends JavaPlugin {
         }
         if (!getLanguageConfig().contains("secondInventoryName")){
             getLanguageConfig().set("secondInventoryName", "&6&lCompactCrates &8» &7%crate%");
+        }
+        if (!getLanguageConfig().contains("noKeys")){
+            getLanguageConfig().set("noKeys", "&cYou don't have any keys for this crate");
+        }
+        if (!getLanguageConfig().contains("crateOpened")){
+            getLanguageConfig().set("crateOpened", "&aYou open now the crate &e%crate%");
         }
 
 

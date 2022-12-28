@@ -1,5 +1,6 @@
 package leon_lp9.compactcrates;
 
+import leon_lp9.compactcrates.manager.OpenCrate;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -10,6 +11,8 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.scheduler.BukkitRunnable;
+import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
 
@@ -111,7 +114,28 @@ public class InventoryManager implements Listener {
                 openSecondInventory(player, event.getCurrentItem().getItemMeta().getLocalizedName(), event.getCurrentItem().getItemMeta().getDisplayName());
 
             }else if (event.getClick().isLeftClick()){
-                player.sendMessage("§cThis feature is not implemented yet");
+
+                if (OpenCrate.getRunnable.containsKey(player)){
+                    player.sendMessage(CompactCrates.getPrefix() + "§cYou are already opening a crate!");
+                    player.closeInventory();
+                    return;
+                }
+                //get players amount of keys
+                int keys = CompactCrates.getInstance().getUserConfig().getInt(player.getUniqueId().toString() + "." + event.getCurrentItem().getItemMeta().getLocalizedName() + ".Keys");
+
+                if (keys > 0) {
+                    //remove 1 key
+                    CompactCrates.getInstance().getUserConfig().set(player.getUniqueId().toString() + "." + event.getCurrentItem().getItemMeta().getLocalizedName() + ".Keys", keys - 1);
+                    CompactCrates.getInstance().saveUserConfig();
+                    player.closeInventory();
+                    player.sendMessage(CompactCrates.getPrefix()+ CompactCrates.getInstance().getLanguageConfig().getString("crateOpened").replace("%crate%", event.getCurrentItem().getItemMeta().getDisplayName()).replace("&", "§"));
+                    //open crate
+                    OpenCrate.openCrate(player, event.getCurrentItem().getItemMeta().getLocalizedName(), event.getCurrentItem().getItemMeta().getDisplayName());
+                }else {
+                    player.closeInventory();
+                    player.sendMessage(CompactCrates.getPrefix() + CompactCrates.getInstance().getLanguageConfig().getString("noKeys").replace("&", "§"));
+                }
+
             }else if (event.getClick().isCreativeAction()){
                 if (player.hasPermission("compactcrates.admin")){
                     openSecondAdminInventory(player, event.getCurrentItem().getItemMeta().getLocalizedName(), event.getCurrentItem().getItemMeta().getDisplayName());
@@ -134,7 +158,6 @@ public class InventoryManager implements Listener {
                     }
                 }else {
                     event.setCancelled(true);
-                    player.sendMessage("§cYou don't have permission to do this");
                 }
             }else {
                 event.setCancelled(true);
@@ -146,6 +169,8 @@ public class InventoryManager implements Listener {
                 }
             }
 
+        }else if (event.getView().getTitle().startsWith("§7Open.. ")) {
+            event.setCancelled(true);
         }
     }
 
@@ -173,6 +198,18 @@ public class InventoryManager implements Listener {
 
                     player.sendMessage(CompactCrates.getPrefix() + "§aSaved crate " + crateName);
                 }
+            }
+        }else if (event.getView().getTitle().startsWith("§7Open.. ")) {
+            if (OpenCrate.getRunnable.containsKey(player)){
+
+                //Ep level up sound
+                player.playSound(player.getLocation(), "entity.player.levelup", 1, 1);
+
+                //give item
+                player.getInventory().addItem(OpenCrate.getRandomCrateItem(OpenCrate.getCrateID.get(player)));
+
+                OpenCrate.getRunnable.get(player).cancel();
+                OpenCrate.getRunnable.remove(player);
             }
         }
     }
