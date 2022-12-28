@@ -5,6 +5,7 @@ import leon_lp9.compactcrates.ItemBuilder;
 import leon_lp9.compactcrates.UpdateChecker;
 import leon_lp9.compactcrates.manager.SpawnCratesManager;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Particle;
 import org.bukkit.command.Command;
@@ -17,6 +18,7 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class MainCommand implements CommandExecutor, TabCompleter {
     @Override
@@ -82,10 +84,16 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
 
-                sender.sendMessage("§7Commands:");
+                sender.sendMessage("§7Admin Commands:");
                 sender.sendMessage("§e/cc admin gui §7- §eOpen the admin gui");
                 sender.sendMessage("§e/cc admin keys [do] [player] [type] [amount] §7- §eManage keys");
                 sender.sendMessage("§e/cc admin setParticle [particle] §7- §eSet the particle of the crate");
+                sender.sendMessage("§e/cc admin create <ID> <SLOT> <MATERIAL> <NAME> §7- §eCreate a new crate");
+                sender.sendMessage("§e/cc admin deletecrate <ID> §7- §eRemove a crate");
+                sender.sendMessage("§e/cc admin renamecrate <ID> <NewNAME> §7- §eRename a crate");
+                sender.sendMessage("§e/cc admin setslot <ID> <NewSLOW> §7- §eSet the slot of a crate");
+                sender.sendMessage("§e/cc admin changetype <ID> <NewMATERIAL> §7- §eSet the material of a crate");
+                sender.sendMessage("§e/cc admin setsize <Size> §7- §eSet the size of the Menu");
 
                 return true;
             }
@@ -127,6 +135,47 @@ public class MainCommand implements CommandExecutor, TabCompleter {
 
                 }
                 return true;
+            }else if (args[0].equalsIgnoreCase("setmaterial")){
+                if (!sender.hasPermission("compactcrates.admin.setmaterial")) {
+                    sender.sendMessage(CompactCrates.getPrefix() + "You don't have permission to use this command!");
+                    return true;
+                }
+
+                ArrayList<String> mats = new ArrayList<>();
+                for (int i = 0; i < Material.values().length; i++) {
+                    mats.add(Material.values()[i].name());
+                }
+
+                if (mats.contains(args[1].toUpperCase())) {
+
+                    CompactCrates.getInstance().getChestConfig().getConfigurationSection("chestsPositions").getKeys(false).forEach(s -> {
+                        Location loc = new Location(Bukkit.getWorld(CompactCrates.getInstance().getChestConfig().getString("chestsPositions." + s + ".world")),
+                                CompactCrates.getInstance().getChestConfig().getDouble("chestsPositions." + s + ".x"),
+                                CompactCrates.getInstance().getChestConfig().getDouble("chestsPositions." + s + ".y"),
+                                CompactCrates.getInstance().getChestConfig().getDouble("chestsPositions." + s + ".z"));
+
+                        if (sender instanceof Player) {
+                            Player player = (Player) sender;
+
+                            if (player.getWorld().equals(loc.getWorld())) {
+                                if (player.getLocation().distance(loc) <= 5) {
+                                    CompactCrates.getInstance().getChestConfig().set("chestsPositions." + s + ".type", args[1].toUpperCase());
+                                    CompactCrates.getInstance().saveChestsConfig();
+                                    SpawnCratesManager.spawnCrates();
+                                    sender.sendMessage(CompactCrates.getPrefix() + "§aYou have changed the material of the crate!");
+                                }
+                            }
+
+                        } else {
+                            sender.sendMessage(CompactCrates.getPrefix() + "You must be a player to use this command!");
+                        }
+                    });
+
+                    CompactCrates.getInstance().saveConfig();
+                    sender.sendMessage(CompactCrates.getPrefix() + "§aYou have set the crate material to " + args[1].toUpperCase());
+                }else{
+                    sender.sendMessage(CompactCrates.getPrefix() + "§cThat is not a valid material!");
+                }
             }
         }
 
@@ -297,7 +346,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             }
         }
 
-        if (args.length == 6){
+        if (args.length >= 6){
             if (args[0].equalsIgnoreCase("admin")) {
                 if (args[1].equalsIgnoreCase("keys")) {
                     if (!sender.hasPermission("compactcrates.admin.keys")) {
@@ -369,6 +418,30 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                         return true;
                     }
                 }
+
+                if (args[1].equalsIgnoreCase("create")){
+                    if (!sender.hasPermission("compactcrates.admin.create")) {
+                        sender.sendMessage(CompactCrates.getPrefix() + "You don't have permission to use this command!");
+                        return true;
+                    }
+
+                    ArrayList<String> mats = new ArrayList<>();
+                    for (int i = 0; i < Material.values().length; i++) {
+                        mats.add(Material.values()[i].name());
+                    }
+
+                    if (mats.contains(args[4].toUpperCase())){
+                        Integer slot = Integer.parseInt(args[3]);
+
+                        CompactCrates.getInstance().getChestConfig().set("cratesTypes." + args[2] + ".ID", args[2]);
+                        CompactCrates.getInstance().getChestConfig().set("cratesTypes." + args[2] + ".Name", args[5]);
+                        CompactCrates.getInstance().getChestConfig().set("cratesTypes." + args[2] + ".Slot", slot);
+                        CompactCrates.getInstance().getChestConfig().set("cratesTypes." + args[2] + ".Type", args[4].toUpperCase());
+
+                        CompactCrates.getInstance().saveChestsConfig();
+                    }
+
+                }
             }
         }
 
@@ -379,10 +452,16 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
         if (args.length == 1) {
-            return List.of("reload", "placechest", "help", "admin");
+            return List.of("reload", "placechest", "help", "admin", "setmaterial");
         }else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("admin")) {
                 return List.of("gui", "keys", "setParticle", "deletecrate", "setslot", "changetype", "renamecrate", "setsize", "create");
+            }else if (args[0].equalsIgnoreCase("setmaterial")){
+                ArrayList<String> types = new ArrayList<>();
+                for (int i = 0; i < Material.values().length; i++) {
+                    types.add(Material.values()[i].name());
+                }
+                return types;
             }
         }else if (args.length == 3) {
             if (args[0].equalsIgnoreCase("admin")) {

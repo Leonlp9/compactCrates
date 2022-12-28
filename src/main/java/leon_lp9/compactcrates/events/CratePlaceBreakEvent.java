@@ -93,6 +93,7 @@ public class CratePlaceBreakEvent implements Listener {
 
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if (SpawnCratesManager.isCrate(block.getLocation())) {
+                event.setCancelled(true);
                 if (player.hasPermission("compactcrates.open")) {
                     InventoryManager.openFirstInventory(player);
                 }else {
