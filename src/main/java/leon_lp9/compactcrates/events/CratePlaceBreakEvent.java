@@ -75,7 +75,11 @@ public class CratePlaceBreakEvent implements Listener {
         }else {
             if (SpawnCratesManager.isCrate(event.getBlock().getLocation())) {
                 event.setCancelled(true);
-                InventoryManager.openFirstInventory(player);
+                if (player.hasPermission("compactcrates.open")) {
+                    InventoryManager.openFirstInventory(player);
+                }else {
+                    player.sendMessage(CompactCrates.getPrefix() + "§cYou don't have permission to open crates!");
+                }
             }
         }
     }
@@ -87,7 +91,11 @@ public class CratePlaceBreakEvent implements Listener {
 
         if (event.getAction() == Action.RIGHT_CLICK_BLOCK) {
             if (SpawnCratesManager.isCrate(block.getLocation())) {
-                InventoryManager.openFirstInventory(player);
+                if (player.hasPermission("compactcrates.open")) {
+                    InventoryManager.openFirstInventory(player);
+                }else {
+                    player.sendMessage(CompactCrates.getPrefix() + "§cYou don't have permission to open crates!");
+                }
             }
         }
     }
