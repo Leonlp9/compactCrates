@@ -1,9 +1,8 @@
 package leon_lp9.compactcrates;
 
+import leon_lp9.compactcrates.builder.ItemBuilder;
+import leon_lp9.compactcrates.builder.ItemChecker;
 import leon_lp9.compactcrates.manager.OpenCrate;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.ComponentBuilder;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -14,8 +13,7 @@ import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
-import org.bukkit.scheduler.BukkitRunnable;
-import org.bukkit.scheduler.BukkitTask;
+import org.bukkit.inventory.meta.tags.ItemTagType;
 
 import java.util.ArrayList;
 
@@ -62,8 +60,24 @@ public class InventoryManager implements Listener {
         for (int i = 0; i < 45; i++) {
 
             if (CompactCrates.getInstance().getChestConfig().contains("chestContents" + "." + crateID + "." + i)) {
-                ItemStack is = CompactCrates.getInstance().getChestConfig().getItemStack("chestContents" + "." + crateID + "." + i);
+                final ItemStack is = CompactCrates.getInstance().getChestConfig().getItemStack("chestContents" + "." + crateID + "." + i);
+
                 inventory.setItem(i, is);
+
+                if (new ItemChecker(is).hasCustomTag("commands", ItemTagType.STRING)){
+
+                    ItemBuilder itemBuilder = new ItemBuilder(is);
+
+                    if (CompactCrates.getInstance().getConfig().contains("CommandRewardPreview") && CompactCrates.getInstance().getConfig().getBoolean("CommandRewardPreview")) {
+                        ArrayList<String> commands = (ArrayList<String>) CompactCrates.getInstance().getConfig().getStringList("CommandRewardLores");
+                        for (String command : commands) {
+                            itemBuilder.addLineLore(command.replace("&", "§"));
+                        }
+                    }
+
+                    inventory.setItem(i, itemBuilder.build());
+                }
+
             }else {
                 CompactCrates.getInstance().getChestConfig().set("chestContents" + "." + crateID + "." + i, new ItemStack(Material.AIR));
                 CompactCrates.getInstance().saveChestsConfig();
@@ -249,8 +263,21 @@ public class InventoryManager implements Listener {
                 //Ep level up sound
                 player.playSound(player.getLocation(), "entity.player.levelup", 1, 1);
 
-                //give item
-                player.getInventory().addItem(OpenCrate.getRandomCrateItem(OpenCrate.getCrateID.get(player)));
+                if (new ItemChecker(OpenCrate.getRandomCrateItem(OpenCrate.getCrateID.get(player))).hasCustomTag("commands", ItemTagType.STRING)){
+
+                    ItemBuilder itemBuilder = new ItemBuilder(OpenCrate.getRandomCrateItem(OpenCrate.getCrateID.get(player)));
+
+                    String[] commands = new ItemChecker(OpenCrate.getRandomCrateItem(OpenCrate.getCrateID.get(player))).getCustomTag("commands", ItemTagType.STRING).toString().split("/");
+
+                    for (int i = 0; i < commands.length; i++) {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commands[i].replace("%player%", player.getName()).replace("&", "§"));
+                    }
+
+                }else {
+
+                    //give item
+                    player.getInventory().addItem(OpenCrate.getRandomCrateItem(OpenCrate.getCrateID.get(player)));
+                }
 
                 OpenCrate.getRunnable.get(player).cancel();
                 OpenCrate.getRunnable.remove(player);

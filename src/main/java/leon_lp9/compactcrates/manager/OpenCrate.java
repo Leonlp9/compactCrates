@@ -1,12 +1,14 @@
 package leon_lp9.compactcrates.manager;
 
 import leon_lp9.compactcrates.CompactCrates;
-import leon_lp9.compactcrates.ItemBuilder;
+import leon_lp9.compactcrates.builder.ItemBuilder;
+import leon_lp9.compactcrates.builder.ItemChecker;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.bukkit.scheduler.BukkitTask;
 
 import java.util.ArrayList;
@@ -51,6 +53,20 @@ public class OpenCrate {
         Random random = new Random();
         int randomItem = random.nextInt(items.size());
 
+        if (new ItemChecker(items.get(randomItem)).hasCustomTag("commands", ItemTagType.STRING)){
+
+            ItemBuilder itemBuilder = new ItemBuilder(items.get(randomItem));
+
+            if (CompactCrates.getInstance().getConfig().contains("CommandRewardPreview") && CompactCrates.getInstance().getConfig().getBoolean("CommandRewardPreview")) {
+                ArrayList<String> commands = (ArrayList<String>) CompactCrates.getInstance().getConfig().getStringList("CommandRewardLores");
+                for (String command : commands) {
+                    itemBuilder.addLineLore(command.replace("&", "§"));
+                }
+            }
+
+            return itemBuilder.build();
+        }
+
         return items.get(randomItem);
     }
 
@@ -61,7 +77,7 @@ public class OpenCrate {
         Integer[] time = {0};
         Double[] nextTime = {-10.0};
         Integer[] delay = {0};
-        BukkitTask myTask = Bukkit.getScheduler().runTaskTimerAsynchronously(CompactCrates.getInstance(), () -> {
+        BukkitTask myTask = Bukkit.getScheduler().runTaskTimer(CompactCrates.getInstance(), () -> {
             time[0]++;
             delay[0]++;
 
@@ -98,8 +114,21 @@ public class OpenCrate {
                 //Ep level up sound
                 player.playSound(player.getLocation(), "entity.player.levelup", 1, 1);
 
-                //give item
-                player.getInventory().addItem(getInventory.get(player).getItem(13));
+                if (new ItemChecker(getInventory.get(player).getItem(13)).hasCustomTag("commands", ItemTagType.STRING)){
+
+                    ItemBuilder itemBuilder = new ItemBuilder(getInventory.get(player).getItem(13));
+
+                    String[] commands = new ItemChecker(getInventory.get(player).getItem(13)).getCustomTag("commands", ItemTagType.STRING).toString().split("/");
+
+                    for (int i = 0; i < commands.length; i++) {
+                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commands[i].replace("%player%", player.getName()).replace("&", "§"));
+                    }
+
+                }else {
+
+                    //give item
+                    player.getInventory().addItem(getInventory.get(player).getItem(13));
+                }
 
                 getRunnable.get(player).cancel();
                 getRunnable.remove(player);

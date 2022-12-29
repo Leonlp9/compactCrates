@@ -26,5 +26,25 @@ DecelerateSpeed: 0.255
 UseVotifer: false
 # This is the Command that will be send when the Player votes
 VoteRewards:
-  - give %player% minecraft:diamond 1
-  - cc admin keys give %player% Default2 1
+  - 'give %player% minecraft:diamond 1'
+  - 'cc admin keys give %player% Default2 1'
+
+# Show in Crate Preview that the Item ist a CommandReward
+CommandRewardPreview: true
+
+CommandRewardLores:
+  - '&7&m-----------------'
+  - '&e&lCommand Reward'
+  - '&7&m-----------------'
+
+# ####
+# ####
+# ####
+# #### Add commands Ingame with /cc item addCommand <Command>
+# #### All commands that are executed as Console.
+# #### You can use %player% to get the PlayerName.
+# #### You can use the sudo command (from Essentials)
+#      to execute the command as the Player
+# ####
+# ####
+# ####

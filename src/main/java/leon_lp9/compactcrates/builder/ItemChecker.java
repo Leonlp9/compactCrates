@@ -1,8 +1,11 @@
-package leon_lp9.compactcrates;
+package leon_lp9.compactcrates.builder;
 
+import leon_lp9.compactcrates.CompactCrates;
+import org.bukkit.NamespacedKey;
 import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.tags.ItemTagType;
 
 public class ItemChecker {
 
@@ -50,6 +53,20 @@ public class ItemChecker {
     //Contains LocalizedName
     public boolean isLocalizedNameContains(String localizedName) {
         return itemMeta.getLocalizedName().contains(localizedName);
+    }
+
+    public boolean hasCustomTag(String key, ItemTagType type) {
+        if (itemMeta == null){
+            return false;
+        }
+        return itemMeta.getCustomTagContainer().hasCustomTag(new NamespacedKey(CompactCrates.getInstance(), key), type);
+    }
+
+    public Object getCustomTag(String key, ItemTagType type) {
+        if (itemMeta == null){
+            return null;
+        }
+        return itemMeta.getCustomTagContainer().getCustomTag(new NamespacedKey(CompactCrates.getInstance(), key), type);
     }
 
     //Contains Lore

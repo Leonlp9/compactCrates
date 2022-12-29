@@ -1,7 +1,7 @@
 package leon_lp9.compactcrates.commands;
 
 import leon_lp9.compactcrates.CompactCrates;
-import leon_lp9.compactcrates.ItemBuilder;
+import leon_lp9.compactcrates.builder.ItemBuilder;
 import leon_lp9.compactcrates.UpdateChecker;
 import leon_lp9.compactcrates.manager.SpawnCratesManager;
 import org.bukkit.Bukkit;
@@ -13,14 +13,12 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.java.JavaPlugin;
+import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
 
 public class MainCommand implements CommandExecutor, TabCompleter {
 
@@ -251,6 +249,46 @@ public class MainCommand implements CommandExecutor, TabCompleter {
             }
         }
 
+        if (args.length >= 3){
+            if (args[0].equalsIgnoreCase("item")){
+                if (sender instanceof Player){
+                    Player player = (Player) sender;
+
+                    if (args[1].equalsIgnoreCase("addCommand")){
+                        StringBuilder commands = new StringBuilder();
+                        for (int i = 2; i < args.length; i++) {
+                            commands.append(args[i]).append(" ");
+                        }
+
+                        if (commands.toString().startsWith("/") || commands.toString().endsWith("/")){
+                            sender.sendMessage("§cYou do not have to start the command with /. It will be added automatically! Only use to Split the commands!");
+                            sender.sendMessage("§cExample: /cc item addCommand give %player% diamond 1/say %player% Hello!/say %player% Hi!");
+                            return true;
+                        }
+
+                        if (player.getInventory().getItemInHand().getType() == Material.AIR){
+                            sender.sendMessage(CompactCrates.getPrefix() + "§cYou must hold an item in your hand!");
+                            return true;
+                        }
+
+                        ItemBuilder itemBuilder = new ItemBuilder(player.getInventory().getItemInHand());
+                        itemBuilder.addCustomTag("commands", ItemTagType.STRING, commands.toString());
+                        player.getInventory().setItemInHand(itemBuilder.build());
+
+                        String[] commandsArray = commands.toString().split("/");
+
+                        player.sendMessage("§aYou have added the following commands to the item!");
+                        for (int i = 0; i < commandsArray.length; i++) {
+                            player.sendMessage("§7/" + commandsArray[i]);
+                        }
+
+                        return true;
+
+                    }
+                }
+            }
+        }
+
         if (args.length >= 4){
             if (args[2].equalsIgnoreCase("show")) {
                 ArrayList<String> types = new ArrayList<>();
@@ -468,7 +506,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
     public @Nullable List<String> onTabComplete(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
         if (args.length == 1) {
-            return List.of("reload", "placechest", "help", "admin", "setmaterial");
+            return List.of("reload", "placechest", "help", "admin", "setmaterial", "item");
         }else if (args.length == 2) {
             if (args[0].equalsIgnoreCase("admin")) {
                 return List.of("gui", "keys", "setParticle", "deletecrate", "setslot", "changetype", "renamecrate", "setsize", "create");
@@ -478,6 +516,10 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                     types.add(Material.values()[i].name());
                 }
                 return types;
+            }else if (args[0].equalsIgnoreCase("item")){
+
+                return List.of("addCommand");
+
             }
         }else if (args.length == 3) {
             if (args[0].equalsIgnoreCase("admin")) {

@@ -2,9 +2,8 @@ package leon_lp9.compactcrates.events;
 
 import leon_lp9.compactcrates.CompactCrates;
 import leon_lp9.compactcrates.InventoryManager;
-import leon_lp9.compactcrates.ItemChecker;
+import leon_lp9.compactcrates.builder.ItemChecker;
 import leon_lp9.compactcrates.manager.SpawnCratesManager;
-import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.entity.Player;

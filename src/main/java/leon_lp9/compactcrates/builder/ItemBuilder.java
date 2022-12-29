@@ -1,8 +1,9 @@
-package leon_lp9.compactcrates;
+package leon_lp9.compactcrates.builder;
 
 import org.bukkit.Color;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.banner.Pattern;
 import org.bukkit.block.banner.PatternType;
 import org.bukkit.enchantments.Enchantment;
@@ -10,8 +11,11 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BannerMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.LeatherArmorMeta;
+import org.bukkit.inventory.meta.tags.ItemTagType;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class ItemBuilder {
 
@@ -20,6 +24,11 @@ public class ItemBuilder {
 
     public ItemBuilder(Material material) {
         this.itemStack = new ItemStack(material);
+        this.itemMeta = itemStack.getItemMeta();
+    }
+
+    public ItemBuilder(ItemStack itemStack) {
+        this.itemStack = new ItemStack(itemStack);
         this.itemMeta = itemStack.getItemMeta();
     }
 
@@ -40,6 +49,19 @@ public class ItemBuilder {
 
     public ItemBuilder setLore(String... lore) {
         itemMeta.setLore(Arrays.asList(lore));
+        return this;
+    }
+
+    public ItemBuilder addLineLore(String lore) {
+
+        if (itemMeta.getLore() == null) {
+            itemMeta.setLore(List.of(lore));
+        } else {
+            ArrayList<String> loreList = new ArrayList<>(itemMeta.getLore());
+            loreList.add(lore);
+            itemMeta.setLore(loreList);
+        }
+
         return this;
     }
 
@@ -101,6 +123,13 @@ public class ItemBuilder {
             skullMeta.setDisplayName(owner);
             itemMeta = skullMeta;
         }
+        return this;
+    }
+
+    public ItemBuilder addCustomTag(String NSkey, ItemTagType type, Object value) {
+        NamespacedKey key = new NamespacedKey("compactcrates", NSkey);
+        itemMeta.getCustomTagContainer().setCustomTag(key, type, value);
+
         return this;
     }
 
