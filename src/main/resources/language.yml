@@ -1,3 +1,4 @@
+
 ######################################################################################################################################################################
 
 ########   ##        ##     ##   #####     ####  ##    ##       ########   ##      ##       ##        ########   #######   ##    ##        ##        ########  #######
@@ -10,15 +11,33 @@
 
 ######################################################################################################################################################################
 
-# This is the Size of the main Inventory
-inventorySize: 45
+# Chat Prefix
+prefix: '&e&lCompactCrates &8» &7'
 
-# This is the Particle around the Crate
-Particle: CRIT
+# The Line below the Main Crate Name
+click: '&e&l&oClick'
 
-# Only turn this on if you have Votifer installed!
-UseVotifer: false
-# This is the Command that will be send when the Player votes
-VoteRewards:
-  - give %player% minecraft:diamond 1
-  - cc admin keys give %player% Default2 1
+# The Inventory Name of the Main Crate
+firstInventoryName: '§6§lCompactCrates'
+
+# The Lore of the Crates in the Main Crate
+# Placeholders:
+# %key% - How many keys the player had
+firstInventoryLore:
+- '&7&m------------------------'
+- '&7Click to open the Crate'
+- '&7You have §e%key% &7Crates'
+- '&7&m------------------------'
+
+# The Inventory Name of the Opening Crate
+# Placeholders:
+# %crate% - The name of the opening Crate
+secondInventoryName: '&6&lCompactCrates &8» &7%crate%'
+
+# Chat message when the player didn't have 1 or more keys for that Crate
+noKeys: '&cYou don''t have any keys for this crate'
+
+# Chat message when the player open the Crate
+# Placeholders:
+# %crate% - The name of the Opening Crate
+crateOpened: '&aYou open now the crate &e%crate%'

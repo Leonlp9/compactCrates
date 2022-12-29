@@ -29,11 +29,23 @@ public final class CompactCrates extends JavaPlugin {
 
     public void onEnable(){
         instance = this;
+
+        this.saveDefaultConfig();
+        this.getConfig().options().copyDefaults(true);
+
+        //safe defaults of language file
+        CompactCrates.getInstance().saveResource("language.yml", false);
+        CompactCrates.getInstance().saveResource("chests.yml", false);
+
         createNewConfig();
 
         // Register Commands
         getCommand("compactcrates").setExecutor(new MainCommand());
         getCommand("compactcrates").setTabCompleter(new MainCommand());
+
+
+        CompactCrates.getInstance().getLanguageConfig().options().copyDefaults(true);
+        CompactCrates.getInstance().getChestConfig().options().copyDefaults(true);
 
         // Register Events
         getServer().getPluginManager().registerEvents(new CratePlaceBreakEvent(), this);
@@ -77,6 +89,8 @@ public final class CompactCrates extends JavaPlugin {
         // Plugin shutdown logic
 
         SpawnCratesManager.removeCrates();
+
+        ParticleManager.stop();
     }
 
     public void createNewConfig(){
@@ -88,57 +102,6 @@ public final class CompactCrates extends JavaPlugin {
 
         userConfig = new File(getDataFolder(), "users.yml");
         userConfigz = YamlConfiguration.loadConfiguration(userConfig);
-
-        //getChestConfig().set("test", "test");
-        //getConfig().set("test", "test");
-        if (!getLanguageConfig().contains("prefix")) {
-            getLanguageConfig().set("prefix", "&e&lCompactCrates &8» &7");
-        }
-        if (!getLanguageConfig().contains("click")) {
-            getLanguageConfig().set("click", "&e&l&oClick");
-        }
-        if (!getLanguageConfig().contains("firstInventoryName")) {
-            getLanguageConfig().set("firstInventoryName", "§6§lCompactCrates");
-        }
-        if (!getLanguageConfig().contains("firstInventoryLore")) {
-            ArrayList<String> list = new ArrayList<String>() {{
-                add("&7&m------------------------");
-                add("&7Click to open the Crate");
-                add("&7You have §e%key% &7Crates");
-                add("&7&m------------------------");
-            }};
-            getLanguageConfig().set("firstInventoryLore", list);
-        }
-        if (!getConfig().contains("inventorySize")) {
-            getConfig().set("inventorySize", 45);
-        }
-        if (!getConfig().contains("Particle")) {
-            getConfig().set("Particle", "CRIT");
-        }
-        if (!getConfig().contains("VoteRewards")) {
-            getConfig().set("VoteRewards", List.of("give %player% minecraft:diamond 1", "cc admin keys give %player% Default2 1"));
-        }
-        if (!getChestConfig().contains("cratesTypes")) {
-            getChestConfig().set("cratesTypes.Default.Type", "ENDER_CHEST");
-            getChestConfig().set("cratesTypes.Default.Name", "&5&lDefault Crate");
-            getChestConfig().set("cratesTypes.Default.ID", "Default1");
-            getChestConfig().set("cratesTypes.Default.Slot", "20");
-
-            getChestConfig().set("cratesTypes.Default2.Type", "REDSTONE_BLOCK");
-            getChestConfig().set("cratesTypes.Default2.Name", "&c&lDefault Crate");
-            getChestConfig().set("cratesTypes.Default2.ID", "Default2");
-            getChestConfig().set("cratesTypes.Default2.Slot", "24");
-        }
-        if (!getLanguageConfig().contains("secondInventoryName")){
-            getLanguageConfig().set("secondInventoryName", "&6&lCompactCrates &8» &7%crate%");
-        }
-        if (!getLanguageConfig().contains("noKeys")){
-            getLanguageConfig().set("noKeys", "&cYou don't have any keys for this crate");
-        }
-        if (!getLanguageConfig().contains("crateOpened")){
-            getLanguageConfig().set("crateOpened", "&aYou open now the crate &e%crate%");
-        }
-
 
         saveChestsConfig();
         saveLanguageConfig();

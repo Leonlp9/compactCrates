@@ -1,3 +1,4 @@
+
 ######################################################################################################################################################################
 
 ########   ##        ##     ##   #####     ####  ##    ##       ########   ##      ##       ##        ########   #######   ##    ##        ##        ########  #######
@@ -10,15 +11,59 @@
 
 ######################################################################################################################################################################
 
-# This is the Size of the main Inventory
-inventorySize: 45
+# You didn't need to change anything here, you can do everything Ingame with the /cc command
+# You didn't need to change anything here, you can do everything Ingame with the /cc command
+# You didn't need to change anything here, you can do everything Ingame with the /cc command
 
-# This is the Particle around the Crate
-Particle: CRIT
-
-# Only turn this on if you have Votifer installed!
-UseVotifer: false
-# This is the Command that will be send when the Player votes
-VoteRewards:
-  - give %player% minecraft:diamond 1
-  - cc admin keys give %player% Default2 1
+cratesTypes:
+  Default:
+    ID: Default
+    Name: '&e&lDefault'
+    Slot: 22
+    Type: BEACON
+chestContents:
+  Default:
+    '0':
+      ==: org.bukkit.inventory.ItemStack
+      v: 3120
+      type: DIAMOND
+    '1':
+      ==: org.bukkit.inventory.ItemStack
+      v: 3120
+      type: EMERALD
+    '2':
+      ==: org.bukkit.inventory.ItemStack
+      v: 3120
+      type: LINGERING_POTION
+      meta:
+        ==: ItemMeta
+        meta-type: POTION
+        potion-type: minecraft:long_leaping
+    '3':
+      ==: org.bukkit.inventory.ItemStack
+      v: 3120
+      type: DIRT
+    '4':
+      ==: org.bukkit.inventory.ItemStack
+      v: 3120
+      type: DIAMOND_CHESTPLATE
+      meta:
+        ==: ItemMeta
+        meta-type: UNSPECIFIC
+        enchants:
+          MENDING: 1
+    '5':
+      ==: org.bukkit.inventory.ItemStack
+      v: 3120
+      type: BREAD
+      amount: 8
+    '6':
+      ==: org.bukkit.inventory.ItemStack
+      v: 3120
+      type: GOLDEN_APPLE
+      amount: 4
+    '7':
+      ==: org.bukkit.inventory.ItemStack
+      v: 3120
+      type: CARROT
+      amount: 16

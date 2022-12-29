@@ -4,13 +4,16 @@ import leon_lp9.compactcrates.CompactCrates;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Particle;
+import org.bukkit.scheduler.BukkitTask;
 
 public class ParticleManager {
+
+    public static BukkitTask task;
 
     static double i = 0;
     public static void start() {
 
-        Bukkit.getScheduler().runTaskTimer(CompactCrates.getInstance(), () -> {
+        task = Bukkit.getScheduler().runTaskTimer(CompactCrates.getInstance(), () -> {
             if (CompactCrates.getInstance().getChestConfig().contains("chestsPositions")) {
                 CompactCrates.getInstance().getChestConfig().getConfigurationSection("chestsPositions").getKeys(false).forEach(s -> {
                     Location location = new Location(Bukkit.getWorld(CompactCrates.getInstance().getChestConfig().getString("chestsPositions." + s + ".world")), CompactCrates.getInstance().getChestConfig().getDouble("chestsPositions." + s + ".x"), CompactCrates.getInstance().getChestConfig().getDouble("chestsPositions." + s + ".y"), CompactCrates.getInstance().getChestConfig().getDouble("chestsPositions." + s + ".z"));
@@ -32,5 +35,9 @@ public class ParticleManager {
                 }
             }
         }, 0, 1);
+    }
+
+    public static void stop() {
+        task.cancel();
     }
 }

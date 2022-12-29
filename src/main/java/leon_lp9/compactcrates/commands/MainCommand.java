@@ -13,14 +13,17 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
 public class MainCommand implements CommandExecutor, TabCompleter {
+
     @Override
     public boolean onCommand(@NotNull CommandSender sender, @NotNull Command command, @NotNull String label, @NotNull String[] args) {
 
@@ -54,8 +57,21 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage(CompactCrates.getPrefix() + "You don't have permission to use this command!");
                     return true;
                 }
+
+                CompactCrates.getInstance().saveDefaultConfig();
+                CompactCrates.getInstance().getConfig().options().copyDefaults(true);
+
+                //safe defaults of language file
+                CompactCrates.getInstance().saveResource("language.yml", false);
+                CompactCrates.getInstance().saveResource("chests.yml", false);
+
                 CompactCrates.getInstance().reloadConfig();
                 CompactCrates.getInstance().createNewConfig();
+
+
+                CompactCrates.getInstance().getLanguageConfig().options().copyDefaults(true);
+                CompactCrates.getInstance().getChestConfig().options().copyDefaults(true);
+
                 SpawnCratesManager.spawnCrates();
                 sender.sendMessage(CompactCrates.getPrefix() + "§aConfig reloaded!");
                 return true;
