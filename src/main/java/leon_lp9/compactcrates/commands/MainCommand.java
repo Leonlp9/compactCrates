@@ -34,6 +34,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage("§e/compactcrates help §7- §eShows this help message");
                 sender.sendMessage("§e/compactcrates reload §7- §eReloads the plugin");
                 sender.sendMessage("§e/compactcrates placechest §7- §eGives you a crate to place");
+                sender.sendMessage("§e/compactcrates admin §7- §eAdmin settings");
+                sender.sendMessage("§e/compactcrates item §7- §eEdit item settings");
                 sender.sendMessage("§e/testvote <PlayerName> §7- §eVotifer test vote");
             });
             return true;
@@ -47,6 +49,9 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage("§e/compactcrates help §7- §eShows this help message");
                 sender.sendMessage("§e/compactcrates reload §7- §eReloads the plugin");
                 sender.sendMessage("§e/compactcrates placechest §7- §eGives you a crate to place");
+                sender.sendMessage("§e/compactcrates admin §7- §eAdmin settings");
+                sender.sendMessage("§e/compactcrates item §7- §eEdit item settings");
+                sender.sendMessage("§e/testvote <PlayerName> §7- §eVotifer test vote");
                 return true;
             }
 
