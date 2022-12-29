@@ -10,9 +10,9 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.block.Action;
-import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.block.*;
+import org.bukkit.event.entity.EntityChangeBlockEvent;
+import org.bukkit.event.entity.EntityExplodeEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
 public class CratePlaceBreakEvent implements Listener {
@@ -102,4 +102,105 @@ public class CratePlaceBreakEvent implements Listener {
             }
         }
     }
+
+    //Piston event
+    @EventHandler
+    public void onPiston(BlockPistonExtendEvent event) {
+        for (Block block : event.getBlocks()) {
+            if (SpawnCratesManager.isCrate(block.getLocation())) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPiston(BlockPistonRetractEvent event) {
+        for (Block block : event.getBlocks()) {
+            if (SpawnCratesManager.isCrate(block.getLocation())) {
+                event.setCancelled(true);
+            }
+        }
+    }
+
+    //Fire event
+    @EventHandler
+    public void onFire(BlockBurnEvent event) {
+        if (SpawnCratesManager.isCrate(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onFire(BlockIgniteEvent event) {
+        if (SpawnCratesManager.isCrate(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onFire(BlockSpreadEvent event) {
+        if (SpawnCratesManager.isCrate(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onFire(BlockFromToEvent event) {
+        if (SpawnCratesManager.isCrate(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onFire(EntityChangeBlockEvent event) {
+        if (SpawnCratesManager.isCrate(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onFire(EntityExplodeEvent event) {
+        event.blockList().removeIf(block -> SpawnCratesManager.isCrate(block.getLocation()));
+    }
+
+    @EventHandler
+    public void onFire(BlockExplodeEvent event) {
+        event.blockList().removeIf(block -> SpawnCratesManager.isCrate(block.getLocation()));
+    }
+
+    @EventHandler
+    public void onFire(BlockPhysicsEvent event) {
+        if (SpawnCratesManager.isCrate(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onFire(BlockDamageEvent event) {
+        if (SpawnCratesManager.isCrate(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onFire(BlockFadeEvent event) {
+        if (SpawnCratesManager.isCrate(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onFire(BlockFormEvent event) {
+        if (SpawnCratesManager.isCrate(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+        }
+    }
+
+    @EventHandler
+    public void onFire(BlockGrowEvent event) {
+        if (SpawnCratesManager.isCrate(event.getBlock().getLocation())) {
+            event.setCancelled(true);
+        }
+    }
+
 }

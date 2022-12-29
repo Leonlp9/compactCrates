@@ -6,7 +6,7 @@
 
     <groupId>leon_lp9</groupId>
     <artifactId>compactCrates</artifactId>
-    <version>1.2-SNAPSHOT</version>
+    <version>1.2.2-SNAPSHOT</version>
     <packaging>jar</packaging>
 
     <name>CompactCrates</name>

@@ -16,6 +16,12 @@ inventorySize: 45
 # This is the Particle around the Crate
 Particle: CRIT
 
+# How long the Opening Crate is spinning
+SpinTime: 450
+
+# How fast the Spinning Crate Decelerate
+DecelerateSpeed: 0.255
+
 # Only turn this on if you have Votifer installed!
 UseVotifer: false
 # This is the Command that will be send when the Player votes

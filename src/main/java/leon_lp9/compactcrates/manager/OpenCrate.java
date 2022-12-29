@@ -66,7 +66,7 @@ public class OpenCrate {
             delay[0]++;
 
             if (delay[0] >= nextTime[0]) {
-                nextTime[0] = nextTime[0] + 0.255;
+                nextTime[0] = nextTime[0] + Double.parseDouble(CompactCrates.getInstance().getConfig().getString("DecelerateSpeed"));
                 delay[0] = 0;
 
                 getInventory.get(player).setItem(9, getInventory.get(player).getItem(10));
@@ -83,7 +83,7 @@ public class OpenCrate {
                 player.playSound(player.getLocation(), "block.note_block.pling", 1, 1);
             }
 
-            if (time[0] ==  500){
+            if (time[0] ==  Integer.parseInt(CompactCrates.getInstance().getConfig().getString("SpinTime"))){
                 getInventory.get(player).setItem(9, getInventory.get(player).getItem(10));
                 getInventory.get(player).setItem(10, getInventory.get(player).getItem(11));
                 getInventory.get(player).setItem(11, getInventory.get(player).getItem(12));
