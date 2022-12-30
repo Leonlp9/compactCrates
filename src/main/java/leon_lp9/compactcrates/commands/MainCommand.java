@@ -257,7 +257,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
         if (args.length >= 3){
             if (args[0].equalsIgnoreCase("item")){
 
-                if (sender.hasPermission("compactcrates.admin.item")) {
+                if (!sender.hasPermission("compactcrates.admin.item")) {
                     sender.sendMessage(CompactCrates.getPrefix() + "You don't have permission to use this command!");
                     return true;
                 }
@@ -295,6 +295,20 @@ public class MainCommand implements CommandExecutor, TabCompleter {
 
                         return true;
 
+                    }else if (args[1].equalsIgnoreCase("addProbability")) {
+                        if (player.getInventory().getItemInHand().getType() == Material.AIR) {
+                            sender.sendMessage(CompactCrates.getPrefix() + "§cYou must hold an item in your hand!");
+                            return true;
+                        }
+
+                        try{
+                            ItemBuilder itemBuilder = new ItemBuilder(player.getInventory().getItemInHand());
+                            itemBuilder.addCustomTag("probability", ItemTagType.DOUBLE, Double.parseDouble(args[2]));
+                            player.getInventory().setItemInHand(itemBuilder.build());
+                        }catch (NumberFormatException e){
+                            sender.sendMessage(CompactCrates.getPrefix() + "§cYou must enter a number!");
+                            return true;
+                        }
                     }
                 }
             }
@@ -529,7 +543,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 return types;
             }else if (args[0].equalsIgnoreCase("item")){
 
-                return List.of("addCommand");
+                return List.of("addCommand", "addProbability");
 
             }
         }else if (args.length == 3) {
@@ -573,6 +587,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 }else if (args[1].equalsIgnoreCase("create")) {
                     return List.of("<ID>");
                 }
+            }else if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("addProbability")) {
+                return List.of("0.10", "100.0", "0.5", "50.0", "10.0", "1.0", "75.5", "0.001");
             }
         }else if (args.length == 4) {
             if (args[0].equalsIgnoreCase("admin")) {

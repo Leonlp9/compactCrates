@@ -17,7 +17,12 @@ import java.util.Random;
 
 public class OpenCrate {
 
+    static Double defaultProbability = 100.0;
+
     public static void openCrate(Player player, String crateID, String crateName) {
+
+        defaultProbability = CompactCrates.getInstance().getConfig().getDouble("defaultProbability");
+
         Inventory inv = Bukkit.createInventory(null, 27, "§7Open.. §6§l" + crateName);
         for (int i = 0; i < 9; i++) {
             inv.setItem(i + 9, getRandomCrateItem(crateID));
@@ -43,6 +48,7 @@ public class OpenCrate {
             ItemStack item = CompactCrates.getInstance().getChestConfig().getItemStack("chestContents." + crateID + "." + key);
             if (item != null && item.getType() !=  Material.AIR) {
                 items.add(item);
+
             }
         });
 
@@ -50,12 +56,41 @@ public class OpenCrate {
             return new ItemBuilder(Material.BARRIER).setDisplayName("§c§lERROR").build();
         }
 
-        Random random = new Random();
-        int randomItem = random.nextInt(items.size());
+        double cumulativeProbability = 0.0;
 
-        if (new ItemChecker(items.get(randomItem)).hasCustomTag("commands", ItemTagType.STRING)){
+        for (ItemStack item : items) {
 
-            ItemBuilder itemBuilder = new ItemBuilder(items.get(randomItem));
+            ItemChecker itemChecker = new ItemChecker(item);
+
+            if (itemChecker.hasCustomTag("probability", ItemTagType.DOUBLE)) {
+                cumulativeProbability += Double.parseDouble(String.valueOf(itemChecker.getCustomTag("probability", ItemTagType.DOUBLE)));
+            } else {
+                cumulativeProbability += defaultProbability;
+            }
+        }
+
+        double randomProbability = new Random().nextDouble() * cumulativeProbability;
+
+        double TempCumulativeProbability = 0.0;
+        ItemStack randomItem = new ItemBuilder(Material.BARRIER).setDisplayName("§c§lERROR").build();
+        for (ItemStack item : items) {
+            ItemChecker itemChecker = new ItemChecker(item);
+
+            if (itemChecker.hasCustomTag("probability", ItemTagType.DOUBLE)) {
+                TempCumulativeProbability += Double.parseDouble(String.valueOf(itemChecker.getCustomTag("probability", ItemTagType.DOUBLE)));
+            } else {
+                TempCumulativeProbability += defaultProbability;
+            }
+
+            if (randomProbability <= TempCumulativeProbability) {
+                randomItem = item;
+                break;
+            }
+        }
+
+        if (new ItemChecker(randomItem).hasCustomTag("commands", ItemTagType.STRING)){
+
+            ItemBuilder itemBuilder = new ItemBuilder(randomItem);
 
             if (CompactCrates.getInstance().getConfig().contains("CommandRewardPreview") && CompactCrates.getInstance().getConfig().getBoolean("CommandRewardPreview")) {
                 ArrayList<String> commands = (ArrayList<String>) CompactCrates.getInstance().getConfig().getStringList("CommandRewardLores");
@@ -67,7 +102,7 @@ public class OpenCrate {
             return itemBuilder.build();
         }
 
-        return items.get(randomItem);
+        return randomItem;
     }
 
     public static HashMap<Player, Inventory> getInventory = new HashMap<>();

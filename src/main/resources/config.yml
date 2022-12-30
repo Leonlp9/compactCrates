@@ -48,3 +48,5 @@ CommandRewardLores:
 # ####
 # ####
 # ####
+
+defaultProbability: 100.0
