@@ -256,6 +256,12 @@ public class MainCommand implements CommandExecutor, TabCompleter {
 
         if (args.length >= 3){
             if (args[0].equalsIgnoreCase("item")){
+
+                if (sender.hasPermission("compactcrates.admin.item")) {
+                    sender.sendMessage(CompactCrates.getPrefix() + "You don't have permission to use this command!");
+                    return true;
+                }
+
                 if (sender instanceof Player){
                     Player player = (Player) sender;
 

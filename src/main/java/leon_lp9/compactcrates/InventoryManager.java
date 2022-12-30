@@ -263,11 +263,13 @@ public class InventoryManager implements Listener {
                 //Ep level up sound
                 player.playSound(player.getLocation(), "entity.player.levelup", 1, 1);
 
-                if (new ItemChecker(OpenCrate.getRandomCrateItem(OpenCrate.getCrateID.get(player))).hasCustomTag("commands", ItemTagType.STRING)){
+                ItemStack item = OpenCrate.getRandomCrateItem(OpenCrate.getCrateID.get(player));
 
-                    ItemBuilder itemBuilder = new ItemBuilder(OpenCrate.getRandomCrateItem(OpenCrate.getCrateID.get(player)));
+                if (new ItemChecker(item).hasCustomTag("commands", ItemTagType.STRING)){
 
-                    String[] commands = new ItemChecker(OpenCrate.getRandomCrateItem(OpenCrate.getCrateID.get(player))).getCustomTag("commands", ItemTagType.STRING).toString().split("/");
+                    ItemBuilder itemBuilder = new ItemBuilder(item);
+
+                    String[] commands = new ItemChecker(item).getCustomTag("commands", ItemTagType.STRING).toString().split("/");
 
                     for (int i = 0; i < commands.length; i++) {
                         Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commands[i].replace("%player%", player.getName()).replace("&", "§"));
@@ -276,7 +278,7 @@ public class InventoryManager implements Listener {
                 }else {
 
                     //give item
-                    player.getInventory().addItem(OpenCrate.getRandomCrateItem(OpenCrate.getCrateID.get(player)));
+                    player.getInventory().addItem(item);
                 }
 
                 OpenCrate.getRunnable.get(player).cancel();
