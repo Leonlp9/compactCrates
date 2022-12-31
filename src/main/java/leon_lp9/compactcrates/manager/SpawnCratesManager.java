@@ -121,4 +121,15 @@ public class SpawnCratesManager {
         }
     }
 
+    public static Location getNearbyCrate(Location location) {
+        for (Location loc : beforCrates.keySet()) {
+            if (loc.getWorld().equals(location.getWorld())) {
+                if (loc.distance(location) <= 8.5) {
+                    return loc;
+                }
+            }
+        }
+        return null;
+    }
+
 }

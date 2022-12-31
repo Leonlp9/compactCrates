@@ -5,6 +5,7 @@ import leon_lp9.compactcrates.events.CratePlaceBreakEvent;
 import leon_lp9.compactcrates.events.PlayerJoinEvent;
 import leon_lp9.compactcrates.manager.ParticleManager;
 import leon_lp9.compactcrates.manager.SpawnCratesManager;
+import leon_lp9.compactcrates.placeholders.UserPlaceHolders;
 import org.bukkit.Bukkit;
 import org.bukkit.configuration.file.FileConfiguration;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -34,8 +35,12 @@ public final class CompactCrates extends JavaPlugin {
         this.getConfig().options().copyDefaults(true);
 
         //safe defaults of language file
-        CompactCrates.getInstance().saveResource("language.yml", false);
-        CompactCrates.getInstance().saveResource("chests.yml", false);
+        if (!new File(getDataFolder(), "language.yml").exists()) {
+            CompactCrates.getInstance().saveResource("language.yml", false);
+        }
+        if (!new File(getDataFolder(), "chests.yml").exists()) {
+            CompactCrates.getInstance().saveResource("chests.yml", false);
+        }
 
         createNewConfig();
 
@@ -51,13 +56,19 @@ public final class CompactCrates extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new CratePlaceBreakEvent(), this);
         getServer().getPluginManager().registerEvents(new InventoryManager(), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinEvent(), this);
+        getServer().getPluginManager().registerEvents(new ParticleManager(), this);
 
         //check if votifier is installed
-        if (Bukkit.getPluginManager().getPlugin("Votifier") != null) {
+        if (Bukkit.getPluginManager().isPluginEnabled("Votifier")) {
             getServer().getPluginManager().registerEvents(new VoteEvent(), this);
             getLogger().info("Votifier found. VoteEvent registered.");
         }else {
             getLogger().info("Votifier is not installed. VoteEvent will not be registered.");
+        }
+
+        if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
+            new UserPlaceHolders().register();
+            getLogger().info("PlaceholderAPI found. Placeholders registered.");
         }
 
         // Spawn Crates

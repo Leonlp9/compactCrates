@@ -3,6 +3,7 @@ package leon_lp9.compactcrates;
 import leon_lp9.compactcrates.builder.ItemBuilder;
 import leon_lp9.compactcrates.builder.ItemChecker;
 import leon_lp9.compactcrates.manager.OpenCrate;
+import leon_lp9.compactcrates.manager.ParticleManager;
 import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.entity.Player;
@@ -260,29 +261,9 @@ public class InventoryManager implements Listener {
         }else if (event.getView().getTitle().startsWith("§7Open.. ")) {
             if (OpenCrate.getRunnable.containsKey(player)){
 
-                //Ep level up sound
-                player.playSound(player.getLocation(), "entity.player.levelup", 1, 1);
-
                 ItemStack item = OpenCrate.getRandomCrateItem(OpenCrate.getCrateID.get(player));
+                OpenCrate.giveItem(player, item);
 
-                if (new ItemChecker(item).hasCustomTag("commands", ItemTagType.STRING)){
-
-                    ItemBuilder itemBuilder = new ItemBuilder(item);
-
-                    String[] commands = new ItemChecker(item).getCustomTag("commands", ItemTagType.STRING).toString().split("/");
-
-                    for (int i = 0; i < commands.length; i++) {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commands[i].replace("%player%", player.getName()).replace("&", "§"));
-                    }
-
-                }else {
-
-                    //give item
-                    player.getInventory().addItem(item);
-                }
-
-                OpenCrate.getRunnable.get(player).cancel();
-                OpenCrate.getRunnable.remove(player);
             }
         }
     }

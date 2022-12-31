@@ -17,6 +17,7 @@ import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -65,8 +66,12 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 CompactCrates.getInstance().getConfig().options().copyDefaults(true);
 
                 //safe defaults of language file
-                CompactCrates.getInstance().saveResource("language.yml", false);
-                CompactCrates.getInstance().saveResource("chests.yml", false);
+                if (!new File(CompactCrates.getInstance().getDataFolder(), "language.yml").exists()) {
+                    CompactCrates.getInstance().saveResource("language.yml", false);
+                }
+                if (!new File(CompactCrates.getInstance().getDataFolder(), "chests.yml").exists()) {
+                    CompactCrates.getInstance().saveResource("chests.yml", false);
+                }
 
                 CompactCrates.getInstance().reloadConfig();
                 CompactCrates.getInstance().createNewConfig();
@@ -123,9 +128,19 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                     return true;
                 }
 
-
-
                 return true;
+            }
+
+            if (args[0].equalsIgnoreCase("item")){
+                if (!sender.hasPermission("compactcrates.item")){
+                    sender.sendMessage(CompactCrates.getPrefix() + "You don't have permission to use this command!");
+                    return true;
+                }
+
+                sender.sendMessage("§7Item Commands:");
+                sender.sendMessage("§e/cc item addCommand <Comannds> §7- §eAdd a command to the item");
+                sender.sendMessage("§e/cc item addProbability <Probability> §7- §eAdd a probability to the item");
+
             }
 
         }
@@ -194,6 +209,18 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage(CompactCrates.getPrefix() + "§aYou have set the crate material to " + args[1].toUpperCase());
                 }else{
                     sender.sendMessage(CompactCrates.getPrefix() + "§cThat is not a valid material!");
+                }
+            }else if (args[0].equalsIgnoreCase("item")){
+                if (!sender.hasPermission("compactcrates.item")){
+                    sender.sendMessage(CompactCrates.getPrefix() + "You don't have permission to use this command!");
+                    return true;
+                }
+
+                if (args[1].equalsIgnoreCase("addCommand")){
+                    sender.sendMessage(CompactCrates.getPrefix() + "§cPlease use /cc item addCommand <Commands>");
+                    sender.sendMessage(CompactCrates.getPrefix() + "§cSplit the commands with a '/'!");
+                }else if (args[1].equalsIgnoreCase("addProbability")){
+                    sender.sendMessage(CompactCrates.getPrefix() + "§cPlease use /cc item addProbability <Probability>");
                 }
             }
         }
@@ -305,17 +332,44 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                             ItemBuilder itemBuilder = new ItemBuilder(player.getInventory().getItemInHand());
                             itemBuilder.addCustomTag("probability", ItemTagType.DOUBLE, Double.parseDouble(args[2]));
                             player.getInventory().setItemInHand(itemBuilder.build());
+
+                            player.sendMessage(CompactCrates.getPrefix() + "§aYou have added the " + args[2] + " probability to the item!");
                         }catch (NumberFormatException e){
                             sender.sendMessage(CompactCrates.getPrefix() + "§cYou must enter a number!");
                             return true;
                         }
+                    }else if (args[1].equalsIgnoreCase("addWinParticle")){
+                        if (player.getInventory().getItemInHand().getType() == Material.AIR) {
+                            sender.sendMessage(CompactCrates.getPrefix() + "§cYou must hold an item in your hand!");
+                            return true;
+                        }
+
+                        //ArrayListWithAllParticles
+                        List<String> particles = List.of("fallingBlocks".toUpperCase(), "fireworks".toUpperCase());
+
+                        if (particles.contains(args[2].toUpperCase())){
+                            ItemBuilder itemBuilder = new ItemBuilder(player.getInventory().getItemInHand());
+                            itemBuilder.addCustomTag("winparticle", ItemTagType.STRING, args[2].toUpperCase());
+                            player.getInventory().setItemInHand(itemBuilder.build());
+
+                            player.sendMessage(CompactCrates.getPrefix() + "§aYou have added the " + args[2].toUpperCase() + " particle to the item!");
+                        }else {
+                            sender.sendMessage(CompactCrates.getPrefix() + "§cThis particle does not exist!");
+                        }
                     }
+
                 }
             }
         }
 
         if (args.length >= 4){
             if (args[2].equalsIgnoreCase("show")) {
+
+                if (!sender.hasPermission("compactcrates.admin.show")) {
+                    sender.sendMessage(CompactCrates.getPrefix() + "You don't have permission to use this command!");
+                    return true;
+                }
+
                 ArrayList<String> types = new ArrayList<>();
                 CompactCrates.getInstance().getChestConfig().getConfigurationSection("cratesTypes").getKeys(false).forEach(s -> {
                     types.add(CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID"));
@@ -543,7 +597,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 return types;
             }else if (args[0].equalsIgnoreCase("item")){
 
-                return List.of("addCommand", "addProbability");
+                return List.of("addCommand", "addProbability", "addWinParticle");
 
             }
         }else if (args.length == 3) {
@@ -589,6 +643,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 }
             }else if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("addProbability")) {
                 return List.of("0.10", "100.0", "0.5", "50.0", "10.0", "1.0", "75.5", "0.001");
+            }else if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("addWinParticle")) {
+                return List.of("fallingBlocks", "fireworks");
             }
         }else if (args.length == 4) {
             if (args[0].equalsIgnoreCase("admin")) {

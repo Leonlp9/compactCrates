@@ -46,7 +46,7 @@ public class OpenCrate {
 
         CompactCrates.getInstance().getChestConfig().getConfigurationSection("chestContents." + crateID).getKeys(false).forEach(key -> {
             ItemStack item = CompactCrates.getInstance().getChestConfig().getItemStack("chestContents." + crateID + "." + key);
-            if (item != null && item.getType() !=  Material.AIR) {
+            if (item != null && item.getType() != Material.AIR) {
                 items.add(item);
 
             }
@@ -88,7 +88,7 @@ public class OpenCrate {
             }
         }
 
-        if (new ItemChecker(randomItem).hasCustomTag("commands", ItemTagType.STRING)){
+        if (new ItemChecker(randomItem).hasCustomTag("commands", ItemTagType.STRING)) {
 
             ItemBuilder itemBuilder = new ItemBuilder(randomItem);
 
@@ -108,6 +108,7 @@ public class OpenCrate {
     public static HashMap<Player, Inventory> getInventory = new HashMap<>();
     public static HashMap<Player, BukkitTask> getRunnable = new HashMap<>();
     public static HashMap<Player, String> getCrateID = new HashMap<>();
+
     public static void startRunnableForSinglePlayer(Player player, String crateID) {
         Integer[] time = {0};
         Double[] nextTime = {-10.0};
@@ -134,7 +135,7 @@ public class OpenCrate {
                 player.playSound(player.getLocation(), "block.note_block.pling", 1, 1);
             }
 
-            if (time[0] ==  Integer.parseInt(CompactCrates.getInstance().getConfig().getString("SpinTime"))){
+            if (time[0] == Integer.parseInt(CompactCrates.getInstance().getConfig().getString("SpinTime"))) {
                 getInventory.get(player).setItem(9, getInventory.get(player).getItem(10));
                 getInventory.get(player).setItem(10, getInventory.get(player).getItem(11));
                 getInventory.get(player).setItem(11, getInventory.get(player).getItem(12));
@@ -146,32 +147,45 @@ public class OpenCrate {
 
                 getInventory.get(player).setItem(17, getRandomCrateItem(crateID));
 
-                //Ep level up sound
-                player.playSound(player.getLocation(), "entity.player.levelup", 1, 1);
+                giveItem(player, getInventory.get(player).getItem(13));
 
-                if (new ItemChecker(getInventory.get(player).getItem(13)).hasCustomTag("commands", ItemTagType.STRING)){
 
-                    ItemBuilder itemBuilder = new ItemBuilder(getInventory.get(player).getItem(13));
-
-                    String[] commands = new ItemChecker(getInventory.get(player).getItem(13)).getCustomTag("commands", ItemTagType.STRING).toString().split("/");
-
-                    for (int i = 0; i < commands.length; i++) {
-                        Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commands[i].replace("%player%", player.getName()).replace("&", "§"));
-                    }
-
-                }else {
-
-                    //give item
-                    player.getInventory().addItem(getInventory.get(player).getItem(13));
-                }
-
-                getRunnable.get(player).cancel();
-                getRunnable.remove(player);
-                getInventory.remove(player);
-                getCrateID.remove(player);
             }
         }, 0, 1);
         getRunnable.put(player, myTask);
     }
 
+    public static void giveItem(Player player, ItemStack itemStack) {
+        if (new ItemChecker(itemStack).hasCustomTag("winparticle", ItemTagType.STRING)) {
+            if (new ItemChecker(itemStack).getCustomTag("winparticle", ItemTagType.STRING).equals("fallingBlocks".toUpperCase())) {
+                ParticleManager.spawnFallingBlocksAboveNearbyChest(player.getLocation());
+            } else if (new ItemChecker(itemStack).getCustomTag("winparticle", ItemTagType.STRING).equals("fireworks".toUpperCase())) {
+                ParticleManager.spawnFireworkAboveNearbyChest(player.getLocation());
+            }
+        }
+
+        //Ep level up sound
+        player.playSound(player.getLocation(), "entity.player.levelup", 1, 1);
+
+        if (new ItemChecker(itemStack).hasCustomTag("commands", ItemTagType.STRING)) {
+
+            ItemBuilder itemBuilder = new ItemBuilder(itemStack);
+
+            String[] commands = new ItemChecker(itemStack).getCustomTag("commands", ItemTagType.STRING).toString().split("/");
+
+            for (int i = 0; i < commands.length; i++) {
+                Bukkit.dispatchCommand(Bukkit.getConsoleSender(), commands[i].replace("%player%", player.getName()).replace("&", "§"));
+            }
+
+        } else {
+
+            //give item
+            player.getInventory().addItem(itemStack);
+        }
+
+        getRunnable.get(player).cancel();
+        getRunnable.remove(player);
+        getInventory.remove(player);
+        getCrateID.remove(player);
+    }
 }
