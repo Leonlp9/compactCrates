@@ -21,6 +21,19 @@ cratesTypes:
     Name: '&e&lDefault'
     Slot: 22
     Type: BEACON
+
+    # varients: csgo/single/wheel_of_fortune
+    SpinType: csgo
+
+    # A random item is taken from the list and placed in the empty spaces in the crate each tick
+    FillWith:
+      - 'RED_STAINED_GLASS_PANE'
+      - 'GREEN_STAINED_GLASS_PANE'
+      - 'BLUE_STAINED_GLASS_PANE'
+      - 'YELLOW_STAINED_GLASS_PANE'
+      - 'PURPLE_STAINED_GLASS_PANE'
+      - 'ORANGE_STAINED_GLASS_PANE'
+    # Use - 'AIR' for nothing
 chestContents:
   Default:
     '0':

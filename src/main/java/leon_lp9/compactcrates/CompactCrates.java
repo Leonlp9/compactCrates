@@ -12,6 +12,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -57,6 +58,10 @@ public final class CompactCrates extends JavaPlugin {
         getServer().getPluginManager().registerEvents(new InventoryManager(), this);
         getServer().getPluginManager().registerEvents(new PlayerJoinEvent(), this);
         getServer().getPluginManager().registerEvents(new ParticleManager(), this);
+
+        int pluginId = 17254; // <-- Replace with the id of your plugin!
+        Metrics metrics = new Metrics(this, pluginId);
+        getLogger().info("Metrics enabled");
 
         //check if votifier is installed
         if (Bukkit.getPluginManager().isPluginEnabled("Votifier")) {

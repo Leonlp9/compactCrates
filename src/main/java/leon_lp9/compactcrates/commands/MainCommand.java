@@ -570,6 +570,8 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                         CompactCrates.getInstance().getChestConfig().set("cratesTypes." + args[2] + ".Name", args[5]);
                         CompactCrates.getInstance().getChestConfig().set("cratesTypes." + args[2] + ".Slot", slot);
                         CompactCrates.getInstance().getChestConfig().set("cratesTypes." + args[2] + ".Type", args[4].toUpperCase());
+                        CompactCrates.getInstance().getChestConfig().set("cratesTypes." + args[2] + ".SpinType", "csgo");
+                        CompactCrates.getInstance().getChestConfig().set("cratesTypes." + args[2] + ".FillWith", List.of("AIR"));
 
                         CompactCrates.getInstance().saveChestsConfig();
                     }
