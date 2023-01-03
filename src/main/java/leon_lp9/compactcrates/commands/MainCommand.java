@@ -3,16 +3,18 @@ package leon_lp9.compactcrates.commands;
 import leon_lp9.compactcrates.CompactCrates;
 import leon_lp9.compactcrates.builder.ItemBuilder;
 import leon_lp9.compactcrates.UpdateChecker;
+import leon_lp9.compactcrates.builder.ItemChecker;
 import leon_lp9.compactcrates.manager.SpawnCratesManager;
-import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.Particle;
+import org.bukkit.*;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.command.TabCompleter;
 import org.bukkit.entity.Player;
+import org.bukkit.event.inventory.InventoryType;
+import org.bukkit.inventory.Inventory;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.ItemTagType;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -147,25 +149,56 @@ public class MainCommand implements CommandExecutor, TabCompleter {
 
         if (args.length == 2) {
             if (args[0].equalsIgnoreCase("admin")) {
-                if (args[1].equalsIgnoreCase("gui")) {
-                    if (!sender.hasPermission("compactcrates.admin.gui")) {
-                        sender.sendMessage(CompactCrates.getPrefix() + "You don't have permission to use this command!");
-                        return true;
-                    }
-                    if (sender instanceof Player) {
-                        Player player = (Player) sender;
-                        //player.openInventory(CompactCrates.getInstance().getAdminGUI().getInventory());
-                        return true;
-                    } else {
-                        sender.sendMessage(CompactCrates.getPrefix() + "You must be a player to use this command!");
-                    }
-                    return true;
-
-                } else if (args[1].equalsIgnoreCase("setParticle")) {
+                if (args[1].equalsIgnoreCase("setParticle")) {
                     if (!sender.hasPermission("compactcrates.admin.setparticle")) {
                         sender.sendMessage(CompactCrates.getPrefix() + "You don't have permission to use this command!");
                         return true;
                     }
+
+                }else if (args[1].equalsIgnoreCase("gui")){
+                    if (!sender.hasPermission("compactcrates.admin.gui")){
+                        sender.sendMessage(CompactCrates.getPrefix() + "You don't have permission to use this command!");
+                        return true;
+                    }
+
+                    Player player = (Player) sender;
+
+                    player.sendMessage("§aOpening GUI...");
+
+                    Inventory inventory = Bukkit.createInventory(null, 45, "§6CompactCrates Admin GUI");
+
+                    ArrayList<ItemStack> items = new ArrayList<>();
+
+                    CompactCrates.getInstance().getChestConfig().getConfigurationSection("cratesTypes").getKeys(false).forEach(s -> {
+                        ItemStack itemStack = new ItemBuilder(Material.getMaterial(CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".Type"))).setLocalizedName("crate").setDisplayName(CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".Name").replace("&", "§")).setLocalizedName(CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID")).build();
+                        ItemMeta itemMeta = itemStack.getItemMeta();
+                        ArrayList<String> lore = new ArrayList<>();
+
+                        if (!CompactCrates.getInstance().getUserConfig().contains( player.getUniqueId().toString() + "." + CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID") + ".Keys")){
+                            CompactCrates.getInstance().getUserConfig().set( player.getUniqueId().toString() + "." + CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID") + ".Keys", 0);
+                            CompactCrates.getInstance().saveUserConfig();
+                        }
+
+                        lore.add("§7");
+                        lore.add("§e§oLeft click§e to open the crate");
+                        lore.add("§e§oRight click§e to see the rewards");
+                        if (player.hasPermission("compactcrates.admin") && player.getGameMode().equals(GameMode.CREATIVE)) {
+                            lore.add("§e§oMiddle click§e to edit the crate (Admin)");
+                        }
+                        lore.add("§7");
+
+
+                        itemMeta.setLore(lore);
+                        itemStack.setItemMeta(itemMeta);
+
+                        items.add(itemStack);
+                    });
+
+                    for (int i = 0; i < items.size(); i++) {
+                        inventory.setItem(i, items.get(i));
+                    }
+
+                    player.openInventory(inventory);
 
                 }
                 return true;
@@ -221,6 +254,65 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                     sender.sendMessage(CompactCrates.getPrefix() + "§cSplit the commands with a '/'!");
                 }else if (args[1].equalsIgnoreCase("addProbability")){
                     sender.sendMessage(CompactCrates.getPrefix() + "§cPlease use /cc item addProbability <Probability>");
+                }else if (args[1].equalsIgnoreCase("setPreviewLore")) {
+                    sender.sendMessage(CompactCrates.getPrefix() + "§cPlease use /cc item setPreviewLore <Lore>");
+                    sender.sendMessage(CompactCrates.getPrefix() + "§cNext line lore with a '/n'!");
+                }else if (args[1].equalsIgnoreCase("preview")){
+                    Player player = (Player) sender;
+
+                    Inventory inventory = Bukkit.createInventory(null, InventoryType.HOPPER, "§6CompactCrates Admin GUI Preview");
+
+                    ItemStack is = player.getInventory().getItemInMainHand();
+
+                    ItemStack stackwithlore = null;
+
+                    inventory.setItem(2, is);
+
+
+                    if (new ItemChecker(is).hasCustomTag("previewlore", ItemTagType.STRING)) {
+                        ItemBuilder itemBuilder = new ItemBuilder(is);
+
+                        String[] lore = new ItemChecker(is).getCustomTag("previewlore", ItemTagType.STRING).toString().split("/n");
+
+                        for (String s : lore) {
+                            itemBuilder.addLineLore(s.replace("&", "§"));
+                        }
+
+                        inventory.setItem(2, itemBuilder.build());
+
+                        stackwithlore = itemBuilder.build();
+                    }
+
+                    if (new ItemChecker((stackwithlore == null ? is : stackwithlore)).hasCustomTag("commands", ItemTagType.STRING)){
+
+
+                        ItemBuilder itemBuilder2 = new ItemBuilder(Material.PAPER);
+                        itemBuilder2.setDisplayName("§6Commands");
+
+                        String[] command2s = new ItemChecker((stackwithlore == null ? is : stackwithlore)).getCustomTag("commands", ItemTagType.STRING).toString().split("/");
+
+                        for (String s : command2s) {
+                            itemBuilder2.addLineLore("§7- /" + s.replace("&", "§"));
+                        }
+
+                        inventory.setItem(4, itemBuilder2.build());
+
+
+                        ItemBuilder itemBuilder = new ItemBuilder((stackwithlore == null ? is : stackwithlore));
+
+                        if (CompactCrates.getInstance().getConfig().contains("CommandRewardPreview") && CompactCrates.getInstance().getConfig().getBoolean("CommandRewardPreview")) {
+                            ArrayList<String> commands = (ArrayList<String>) CompactCrates.getInstance().getConfig().getStringList("CommandRewardLores");
+                            for (String command2 : commands) {
+                                itemBuilder.addLineLore(command2.replace("&", "§"));
+                            }
+                        }
+
+                        inventory.setItem(2, itemBuilder.build());
+
+                    }
+                    player.openInventory(inventory);
+
+
                 }
             }
         }
@@ -356,8 +448,23 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                         }else {
                             sender.sendMessage(CompactCrates.getPrefix() + "§cThis particle does not exist!");
                         }
-                    }
+                    }else if (args[1].equalsIgnoreCase("setPreviewLore")){
+                        if (player.getInventory().getItemInHand().getType() == Material.AIR) {
+                            sender.sendMessage(CompactCrates.getPrefix() + "§cYou must hold an item in your hand!");
+                            return true;
+                        }
 
+                        StringBuilder lore = new StringBuilder();
+                        for (int i = 2; i < args.length; i++) {
+                            lore.append(args[i]).append(" ");
+                        }
+
+                        ItemBuilder itemBuilder = new ItemBuilder(player.getInventory().getItemInHand());
+                        itemBuilder.addCustomTag("previewlore", ItemTagType.STRING, lore.toString());
+                        player.getInventory().setItemInHand(itemBuilder.build());
+
+                        player.sendMessage(CompactCrates.getPrefix() + "§aYou have added the " + lore.toString() + " lore to the item!");
+                    }
                 }
             }
         }
@@ -599,7 +706,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 return types;
             }else if (args[0].equalsIgnoreCase("item")){
 
-                return List.of("addCommand", "addProbability", "addWinParticle");
+                return List.of("addCommand", "addProbability", "addWinParticle", "setPreviewLore", "preview");
 
             }
         }else if (args.length == 3) {
@@ -647,6 +754,20 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 return List.of("0.10", "100.0", "0.5", "50.0", "10.0", "1.0", "75.5", "0.001");
             }else if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("addWinParticle")) {
                 return List.of("fallingBlocks", "fireworks");
+            }else if (args[0].equalsIgnoreCase("item") && args[1].equalsIgnoreCase("setPreviewLore")) {
+                Player player = (Player) sender;
+                ItemStack item = player.getInventory().getItemInMainHand();
+
+                if (item != null && item.getType() != Material.AIR) {
+                    ItemMeta meta = item.getItemMeta();
+                    if (meta != null) {
+                        if (new ItemChecker(item).hasCustomTag("previewLore", ItemTagType.STRING)){
+                            return List.of((String) new ItemChecker(item).getCustomTag("previewLore", ItemTagType.STRING));
+                        }
+                    }
+                }
+
+                return List.of();
             }
         }else if (args.length == 4) {
             if (args[0].equalsIgnoreCase("admin")) {
