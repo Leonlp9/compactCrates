@@ -41,3 +41,16 @@ noKeys: '&cYou don''t have any keys for this crate'
 # Placeholders:
 # %crate% - The name of the Opening Crate
 crateOpened: '&aYou open now the crate &e%crate%'
+
+leftClick: '&e&oLeft click&e to open the Crate'
+rightClick: '&e&oRight click&e to see the Rewards'
+middleClick: '&e&oMiddle click&e to edit the crate (Admin)'
+
+back: '&e&lBack'
+
+changeMaterial: '&e&o&lChange the Material'
+changeAnimation: '&e&o&lChange the Animation'
+changeName: '&e&o&lChange the Name'
+setSlot: '&e&o&lSet the Slot'
+setBackgroud: '&e&o&lSet the Background'
+deleteCrate: '&c&o&lDelete the Crate'

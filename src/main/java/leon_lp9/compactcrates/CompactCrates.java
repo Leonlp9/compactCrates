@@ -1,6 +1,7 @@
 package leon_lp9.compactcrates;
 
 import leon_lp9.compactcrates.commands.MainCommand;
+import leon_lp9.compactcrates.database.MySql;
 import leon_lp9.compactcrates.events.CratePlaceBreakEvent;
 import leon_lp9.compactcrates.events.PlayerJoinEvent;
 import leon_lp9.compactcrates.manager.ParticleManager;
@@ -13,6 +14,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 import java.io.File;
 import java.io.IOException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,6 +30,9 @@ public final class CompactCrates extends JavaPlugin {
 
     File userConfig;
     FileConfiguration userConfigz;
+
+    private static MySql mySql;
+    public static boolean useMysql = false;
 
     public void onEnable(){
         instance = this;
@@ -98,6 +103,31 @@ public final class CompactCrates extends JavaPlugin {
                 });
             }
         });
+
+        //check if mysql is enabled
+        if (getConfig().getBoolean("mysql")) {
+
+            mySql = new MySql(getConfig().getString("host"), getConfig().getInt("port"), getConfig().getString("username"), getConfig().getString("password"), getConfig().getString("database"), getConfig().getString("table"));
+
+            useMysql = true;
+            getLogger().info("Mysql is enabled. Connecting to database...");
+            mySql.connect();
+            getLogger().info("Connected to database.");
+            mySql.createTable(getConfig().getString("table"), "uuid VARCHAR(36), crate VARCHAR(16), amount INT(11)");
+
+        }
+
+        if (useMysql){
+            Bukkit.getScheduler().scheduleSyncRepeatingTask(this, new Runnable() {
+                @Override
+                public void run() {
+                    //reconnect to mysql
+                    mySql.disconnect();
+                    System.out.println("[MySql] Reconnect for MySql");
+                    mySql.connect();
+                }
+            }, 20 * 60 * 5, 20 * 60 * 5);
+        }
     }
 
 
@@ -170,5 +200,7 @@ public final class CompactCrates extends JavaPlugin {
         return CompactCrates.getInstance().getLanguageConfig().getString("prefix").replace("&", "§");
     }
 
-
+    public static MySql getMySql() {
+        return mySql;
+    }
 }

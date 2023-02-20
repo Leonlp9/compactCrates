@@ -19,8 +19,26 @@ import org.bukkit.inventory.meta.tags.ItemTagType;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.UUID;
 
 public class InventoryManager implements Listener {
+
+    public static int getCrateAmount(UUID uuid, String crateID){
+        if (CompactCrates.useMysql){
+            return CompactCrates.getInstance().getMySql().getCrateAmount(uuid.toString(), crateID);
+        }else {
+            return CompactCrates.getInstance().getUserConfig().getInt(uuid.toString() + "." + crateID + ".Keys");
+        }
+    }
+
+    public static void setCrateAmount(UUID uuid, String crateID, int amount){
+        if (CompactCrates.useMysql){
+            CompactCrates.getInstance().getMySql().setCrateAmount(uuid.toString(), crateID, amount);
+        }else {
+            CompactCrates.getInstance().getUserConfig().set(uuid.toString() + "." + crateID + ".Keys", amount);
+            CompactCrates.getInstance().saveUserConfig();
+        }
+    }
 
     public static void openFirstInventory(Player player) {
         Inventory inventory = Bukkit.createInventory(null, CompactCrates.getInstance().getConfig().getInt("inventorySize"), CompactCrates.getInstance().getLanguageConfig().getString("firstInventoryName"));
@@ -30,20 +48,29 @@ public class InventoryManager implements Listener {
             ItemMeta itemMeta = itemStack.getItemMeta();
             ArrayList<String> lore = new ArrayList<>();
 
-            if (!CompactCrates.getInstance().getUserConfig().contains( player.getUniqueId().toString() + "." + CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID") + ".Keys")){
-                CompactCrates.getInstance().getUserConfig().set( player.getUniqueId().toString() + "." + CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID") + ".Keys", 0);
-                CompactCrates.getInstance().saveUserConfig();
+            if (!CompactCrates.useMysql) {
+                if (!CompactCrates.getInstance().getUserConfig().contains(player.getUniqueId().toString() + "." + CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID") + ".Keys")) {
+                    CompactCrates.getInstance().getUserConfig().set(player.getUniqueId().toString() + "." + CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID") + ".Keys", 0);
+                    CompactCrates.getInstance().saveUserConfig();
+                }
             }
 
             CompactCrates.getInstance().getLanguageConfig().getStringList("firstInventoryLore").forEach(s1 -> {
-                lore.add(s1.replace("%key%", CompactCrates.getInstance().getUserConfig().getString( player.getUniqueId().toString() + "." + CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID") + ".Keys") + "").replace("&", "§"));
+                lore.add(s1.replace("%key%",  getCrateAmount(player.getUniqueId(), CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID")) + "").replace("&", "§"));
             });
 
+            if (!CompactCrates.getInstance().getLanguageConfig().contains("leftClick")){
+                CompactCrates.getInstance().getLanguageConfig().set("leftClick", "LeftClick OPEN");
+                CompactCrates.getInstance().getLanguageConfig().set("rightClick", "RightClick PREVIEW");
+                CompactCrates.getInstance().getLanguageConfig().set("middleClick", "MiddleClick Admin");
+                CompactCrates.getInstance().saveLanguageConfig();
+            }
+
             lore.add("§7");
-            lore.add("§e§oLeft click§e to open the crate");
-            lore.add("§e§oRight click§e to see the rewards");
+            lore.add(CompactCrates.getInstance().getLanguageConfig().getString("leftClick").replace("&", "§"));
+            lore.add(CompactCrates.getInstance().getLanguageConfig().getString("rightClick").replace("&", "§"));
             if (player.hasPermission("compactcrates.admin") && player.getGameMode().equals(GameMode.CREATIVE)) {
-                lore.add("§e§oMiddle click§e to edit the crate (Admin)");
+                lore.add(CompactCrates.getInstance().getLanguageConfig().getString("middleClick").replace("&", "§"));
             }
             lore.add("§7");
 
@@ -131,26 +158,38 @@ public class InventoryManager implements Listener {
             inventory.setItem(i + 45, new ItemBuilder(Material.GRAY_STAINED_GLASS_PANE).setDisplayName("§7").build());
         }
 
+        if (!CompactCrates.getInstance().getLanguageConfig().contains("deleteCrate")){
+
+            CompactCrates.getInstance().getLanguageConfig().set("changeMaterial", "&e&o&lChange the Material");
+            CompactCrates.getInstance().getLanguageConfig().set("changeAnimation", "&e&o&lChange the Animation");
+            CompactCrates.getInstance().getLanguageConfig().set("changeName", "&e&o&lChange the Name");
+            CompactCrates.getInstance().getLanguageConfig().set("setSlot", "&e&o&lSet the Slot");
+            CompactCrates.getInstance().getLanguageConfig().set("setBackgroud", "&e&o&lSet the Background");
+            CompactCrates.getInstance().getLanguageConfig().set("deleteCrate", "&c&o&lDelete the Crate");
+            CompactCrates.getInstance().getLanguageConfig().set("back", "&c&o&lBack");
+            CompactCrates.getInstance().saveLanguageConfig();
+        }
+
         //back
-        inventory.setItem(49, new ItemBuilder(Material.BARRIER).setDisplayName("§c§lBack").setLocalizedName("back").build());
+        inventory.setItem(49, new ItemBuilder(Material.BARRIER).setDisplayName(CompactCrates.getInstance().getLanguageConfig().getString("back").replace("&", "§")).setLocalizedName("back").build());
 
         //rename
-        inventory.setItem(47, new ItemBuilder(Material.NAME_TAG).setDisplayName("§a§lRename Crate").setLocalizedName("Rename").build());
+        inventory.setItem(47, new ItemBuilder(Material.NAME_TAG).setDisplayName(CompactCrates.getInstance().getLanguageConfig().getString("changeName").replace("&", "§")).setLocalizedName("Rename").build());
 
         //changeType
-        inventory.setItem(45, new ItemBuilder(Material.CONDUIT).setDisplayName("§a§lChangeMaterial").setLocalizedName("ChangeType").build());
+        inventory.setItem(45, new ItemBuilder(Material.CONDUIT).setDisplayName(CompactCrates.getInstance().getLanguageConfig().getString("changeMaterial").replace("&", "§")).setLocalizedName("ChangeType").build());
 
         //setAnimation
-        inventory.setItem(46, new ItemBuilder(Material.CLOCK).setDisplayName("§a§lSetAnimation").setLocalizedName("SetAnimation").build());
+        inventory.setItem(46, new ItemBuilder(Material.CLOCK).setDisplayName(CompactCrates.getInstance().getLanguageConfig().getString("changeAnimation").replace("&", "§")).setLocalizedName("SetAnimation").build());
 
         //setSlot
-        inventory.setItem(51, new ItemBuilder(Material.CHEST).setDisplayName("§a§lSet Slot").setLocalizedName("SetSlot").build());
+        inventory.setItem(51, new ItemBuilder(Material.CHEST).setDisplayName(CompactCrates.getInstance().getLanguageConfig().getString("setSlot").replace("&", "§")).setLocalizedName("SetSlot").build());
 
         //setBackgroundItems
-        inventory.setItem(52, new ItemBuilder(Material.YELLOW_STAINED_GLASS_PANE).setDisplayName("§a§lSet Background Items").setLocalizedName("SetBackgroundItems").build());
+        inventory.setItem(52, new ItemBuilder(Material.YELLOW_STAINED_GLASS_PANE).setDisplayName(CompactCrates.getInstance().getLanguageConfig().getString("setBackgroud").replace("&", "§")).setLocalizedName("SetBackgroundItems").build());
 
         //delete crate
-        inventory.setItem(53, new ItemBuilder(Material.DIAMOND_SWORD).setDisplayName("§c§lDelete Crate").setLocalizedName("DeleteCrate").build());
+        inventory.setItem(53, new ItemBuilder(Material.DIAMOND_SWORD).setDisplayName(CompactCrates.getInstance().getLanguageConfig().getString("deleteCrate").replace("&", "§")).setLocalizedName("DeleteCrate").build());
 
         player.openInventory(inventory);
     }
@@ -177,11 +216,15 @@ public class InventoryManager implements Listener {
                     return;
                 }
                 //get players amount of keys
-                int keys = CompactCrates.getInstance().getUserConfig().getInt(player.getUniqueId().toString() + "." + event.getCurrentItem().getItemMeta().getLocalizedName() + ".Keys");
+                int keys = getCrateAmount(player.getUniqueId(), event.getCurrentItem().getItemMeta().getLocalizedName());
 
                 if (keys > 0) {
                     //remove 1 key
-                    CompactCrates.getInstance().getUserConfig().set(player.getUniqueId().toString() + "." + event.getCurrentItem().getItemMeta().getLocalizedName() + ".Keys", keys - 1);
+                    if (CompactCrates.useMysql){
+                        CompactCrates.getMySql().setCrateAmount(player.getUniqueId().toString(), event.getCurrentItem().getItemMeta().getLocalizedName(), keys - 1);
+                    }else {
+                        CompactCrates.getInstance().getUserConfig().set(player.getUniqueId().toString() + "." + event.getCurrentItem().getItemMeta().getLocalizedName() + ".Keys", keys - 1);
+                    }
                     CompactCrates.getInstance().saveUserConfig();
                     player.closeInventory();
                     player.sendMessage(CompactCrates.getPrefix()+ CompactCrates.getInstance().getLanguageConfig().getString("crateOpened").replace("%crate%", event.getCurrentItem().getItemMeta().getDisplayName()).replace("&", "§"));

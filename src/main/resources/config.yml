@@ -50,3 +50,14 @@ CommandRewardLores:
 # ####
 
 defaultProbability: 100.0
+
+tickSound: 'block.note_block.pling'
+giveSound: 'entity.player.levelup'
+
+mysql: false
+host: 'localhost'
+port: 3306
+database: 'CompactCrates'
+username: 'root'
+password: 'password'
+table: 'CompactCrates'

@@ -1,6 +1,7 @@
 package leon_lp9.compactcrates.commands;
 
 import leon_lp9.compactcrates.CompactCrates;
+import leon_lp9.compactcrates.InventoryManager;
 import leon_lp9.compactcrates.builder.ItemBuilder;
 import leon_lp9.compactcrates.UpdateChecker;
 import leon_lp9.compactcrates.builder.ItemChecker;
@@ -174,16 +175,18 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                         ItemMeta itemMeta = itemStack.getItemMeta();
                         ArrayList<String> lore = new ArrayList<>();
 
-                        if (!CompactCrates.getInstance().getUserConfig().contains( player.getUniqueId().toString() + "." + CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID") + ".Keys")){
-                            CompactCrates.getInstance().getUserConfig().set( player.getUniqueId().toString() + "." + CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID") + ".Keys", 0);
-                            CompactCrates.getInstance().saveUserConfig();
+                        if (!CompactCrates.useMysql) {
+                            if (!CompactCrates.getInstance().getUserConfig().contains(player.getUniqueId().toString() + "." + CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID") + ".Keys")) {
+                                CompactCrates.getInstance().getUserConfig().set(player.getUniqueId().toString() + "." + CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID") + ".Keys", 0);
+                                CompactCrates.getInstance().saveUserConfig();
+                            }
                         }
 
                         lore.add("§7");
-                        lore.add("§e§oLeft click§e to open the crate");
-                        lore.add("§e§oRight click§e to see the rewards");
+                        lore.add(CompactCrates.getInstance().getLanguageConfig().getString("leftClick").replace("&", "§"));
+                        lore.add(CompactCrates.getInstance().getLanguageConfig().getString("rightClick").replace("&", "§"));
                         if (player.hasPermission("compactcrates.admin") && player.getGameMode().equals(GameMode.CREATIVE)) {
-                            lore.add("§e§oMiddle click§e to edit the crate (Admin)");
+                            lore.add(CompactCrates.getInstance().getLanguageConfig().getString("middleClick").replace("&", "§"));
                         }
                         lore.add("§7");
 
@@ -491,7 +494,7 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                 sender.sendMessage(CompactCrates.getPrefix() + "§a" + target.getName() + "'s keys:");
                 types.forEach(s -> {
                     if (CompactCrates.getInstance().getUserConfig().contains(target.getUniqueId() + "." + s + ".Keys")) {
-                        sender.sendMessage("§7- §a" + s + ": §e" + CompactCrates.getInstance().getUserConfig().getString(target.getUniqueId() + "." + s + ".Keys"));
+                        sender.sendMessage("§7- §a" + s + ": §e" + InventoryManager.getCrateAmount(target.getUniqueId(), s));
                     } else {
                         sender.sendMessage("§7- §a" + s + ": §e0");
                     }
@@ -605,12 +608,17 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                         }
                         if (types.contains(args[4])){
 
-                            if (!CompactCrates.getInstance().getUserConfig().contains(target.getUniqueId() + "." + args[4] + ".Keys")){
-                                CompactCrates.getInstance().getUserConfig().set(target.getUniqueId() + "." + args[4] + ".Keys", 0);
+                            if (!CompactCrates.useMysql) {
+                                if (!CompactCrates.getInstance().getUserConfig().contains(target.getUniqueId() + "." + args[4] + ".Keys")) {
+                                    CompactCrates.getInstance().getUserConfig().set(target.getUniqueId() + "." + args[4] + ".Keys", 0);
+                                }
+
+                                CompactCrates.getInstance().getUserConfig().set(target.getUniqueId() + "." + args[4] + ".Keys", Integer.parseInt(CompactCrates.getInstance().getUserConfig().getString(target.getUniqueId() + "." + args[4] + ".Keys")) + Integer.parseInt(args[5]));
+                                CompactCrates.getInstance().saveUserConfig();
+                            }else {
+                                CompactCrates.getInstance().getMySql().addCrateAmount(target.getUniqueId().toString(), args[4], Integer.parseInt(args[5]));
                             }
 
-                            CompactCrates.getInstance().getUserConfig().set(target.getUniqueId() + "." + args[4] + ".Keys", Integer.parseInt(CompactCrates.getInstance().getUserConfig().getString(target.getUniqueId() + "." + args[4] + ".Keys")) + Integer.parseInt(args[5]));
-                            CompactCrates.getInstance().saveUserConfig();
                             sender.sendMessage(CompactCrates.getPrefix() + "§aYou have given " + target.getName() + " " + args[5] + " " + args[4] + " keys!");
                            return true;
                         }else {
@@ -625,8 +633,12 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                         }
                         if (types.contains(args[4])){
 
-                            CompactCrates.getInstance().getUserConfig().set(target.getUniqueId() + "." + args[4] + ".Keys", Integer.parseInt(args[5]));
-                            CompactCrates.getInstance().saveUserConfig();
+                            if (!CompactCrates.useMysql) {
+                                CompactCrates.getInstance().getUserConfig().set(target.getUniqueId() + "." + args[4] + ".Keys", Integer.parseInt(args[5]));
+                                CompactCrates.getInstance().saveUserConfig();
+                            }else {
+                                CompactCrates.getInstance().getMySql().setCrateAmount(target.getUniqueId().toString(), args[4], Integer.parseInt(args[5]));
+                            }
                             sender.sendMessage(CompactCrates.getPrefix() + "§aYou have set " + target.getName() + "'s " + args[4] + " keys to " + args[5] + "!");
                             return true;
                         }else {
@@ -645,8 +657,12 @@ public class MainCommand implements CommandExecutor, TabCompleter {
                                 CompactCrates.getInstance().getUserConfig().set(target.getUniqueId() + "." + args[4] + ".Keys", 0);
                             }
 
-                            CompactCrates.getInstance().getUserConfig().set(target.getUniqueId() + "." + args[4] + ".Keys", Integer.parseInt(CompactCrates.getInstance().getUserConfig().getString(target.getUniqueId() + "." + args[4] + ".Keys")) - Integer.parseInt(args[5]));
-                            CompactCrates.getInstance().saveUserConfig();
+                            if (!CompactCrates.useMysql) {
+                                CompactCrates.getInstance().getUserConfig().set(target.getUniqueId() + "." + args[4] + ".Keys", Integer.parseInt(CompactCrates.getInstance().getUserConfig().getString(target.getUniqueId() + "." + args[4] + ".Keys")) - Integer.parseInt(args[5]));
+                                CompactCrates.getInstance().saveUserConfig();
+                            }else {
+                                CompactCrates.getInstance().getMySql().addCrateAmount(target.getUniqueId().toString(), args[4], -Integer.parseInt(args[5]));
+                            }
                             sender.sendMessage(CompactCrates.getPrefix() + "§aYou have taken " + args[5] + " " + args[4] + " keys from " + target.getName() + "!");
                             return true;
                         }else {

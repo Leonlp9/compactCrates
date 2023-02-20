@@ -132,7 +132,7 @@ public class OpenCrate {
 
                 nextSpinStep(player, crateID, SpinType.getSpinTypeOfCrateID(crateID));
 
-                player.playSound(player.getLocation(), "block.note_block.pling", 1, 1);
+                player.playSound(player.getLocation(), CompactCrates.getInstance().getConfig().getString("tickSound"), 1, 1);
             }
 
             if (time[0] == Integer.parseInt(CompactCrates.getInstance().getConfig().getString("SpinTime"))) {
@@ -363,7 +363,7 @@ public class OpenCrate {
         }
 
         //Ep level up sound
-        player.playSound(player.getLocation(), "entity.player.levelup", 1, 1);
+        player.playSound(player.getLocation(), CompactCrates.getInstance().getConfig().getString("giveSound"), 1, 1);
 
         if (new ItemChecker(itemStack).hasCustomTag("commands", ItemTagType.STRING)) {
 
