@@ -15,6 +15,9 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.inventory.meta.tags.ItemTagType;
+import org.geysermc.cumulus.SimpleForm;
+import org.geysermc.cumulus.response.SimpleFormResponse;
+import org.geysermc.floodgate.api.FloodgateApi;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -40,7 +43,83 @@ public class InventoryManager implements Listener {
         }
     }
 
-    public static void openFirstInventory(Player player) {
+    public static void openBedbedrockInv(Player player){
+        SimpleForm.Builder sf = SimpleForm.builder()
+                .title(CompactCrates.getInstance().getLanguageConfig().getString("firstInventoryName"))
+                .content("");
+
+        CompactCrates.getInstance().getChestConfig().getConfigurationSection("cratesTypes").getKeys(false).forEach(s -> {
+            sf.button(CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".Name").replace("&", "§") + "\n§7" + getCrateAmount(player.getUniqueId(), s) + " " + CompactCrates.getInstance().getLanguageConfig().getString("keyName").replace("&", "§") + "'s");
+        });
+
+        //bedrockOpen: '&aCrate Open'
+        //bedrockPreview: '&aCrate Preview'
+        //bedrockBack: '&aBack'
+        //keyName: '&aKey'
+        if (!CompactCrates.getInstance().getLanguageConfig().contains("bedrockOpen")){
+            CompactCrates.getInstance().getLanguageConfig().set("bedrockOpen", "&aCrate Open");
+            CompactCrates.getInstance().getLanguageConfig().set("bedrockPreview", "&aCrate Preview");
+            CompactCrates.getInstance().getLanguageConfig().set("bedrockBack", "&aBack");
+            CompactCrates.getInstance().getLanguageConfig().set("keyName", "&aKey");
+            CompactCrates.getInstance().saveLanguageConfig();
+        }
+
+        sf.responseHandler((form, data) -> {
+            SimpleFormResponse response = form.parseResponse(data);
+
+            //get crateId from the button name
+            String crateId = CompactCrates.getInstance().getChestConfig().getConfigurationSection("cratesTypes").getKeys(false).toArray()[response.getClickedButtonId()].toString();
+            String crateName = CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + crateId + ".Name").replace("&", "§");
+
+            player.sendMessage(crateName);
+
+            //open second inventory with 3 buttons, open, preview and back
+            SimpleForm.Builder sf2 = SimpleForm.builder()
+                    .title(CompactCrates.getInstance().getLanguageConfig().getString("secondInventoryName").replace("%crate%", crateName).replace("&", "§"))
+                    .content("")
+                    .button(CompactCrates.getInstance().getLanguageConfig().getString("bedrockOpen").replace("&", "§"))
+                    .button(CompactCrates.getInstance().getLanguageConfig().getString("bedrockPreview").replace("&", "§"))
+                    .button(CompactCrates.getInstance().getLanguageConfig().getString("bedrockBack").replace("&", "§"));
+
+            sf2.responseHandler((form2, data2) -> {
+                SimpleFormResponse response2 = form2.parseResponse(data2);
+
+                if (response2.getClickedButtonId() == 0){
+                    //get players amount of keys
+                    int keys = getCrateAmount(player.getUniqueId(), crateId);
+
+                    if (keys > 0) {
+                        //remove 1 key
+                        if (CompactCrates.useMysql){
+                            CompactCrates.getMySql().setCrateAmount(player.getUniqueId().toString(), crateId, keys - 1);
+                        }else {
+                            CompactCrates.getInstance().getUserConfig().set(player.getUniqueId().toString() + "." + crateId + ".Keys", keys - 1);
+                        }
+                        CompactCrates.getInstance().saveUserConfig();
+                        player.closeInventory();
+                        player.sendMessage(CompactCrates.getPrefix()+ CompactCrates.getInstance().getLanguageConfig().getString("crateOpened").replace("%crate%", crateName).replace("&", "§"));
+                        //open crate
+                        OpenCrate.openCrate(player, crateId, crateName);
+                    }else {
+                        player.closeInventory();
+                        player.sendMessage(CompactCrates.getPrefix() + CompactCrates.getInstance().getLanguageConfig().getString("noKeys").replace("&", "§"));
+                    }
+                }else if (response2.getClickedButtonId() == 1){
+                    //preview crate
+                    openSecondInventory(player, crateId, crateName);
+                }else if (response2.getClickedButtonId() == 2){
+                    //back
+                    openBedbedrockInv(player);
+                }
+
+            });
+            FloodgateApi.getInstance().sendForm(player.getUniqueId(), sf2);
+        });
+
+        FloodgateApi.getInstance().sendForm(player.getUniqueId(), sf);
+    }
+
+    public static void openJavaInv(Player player){
         Inventory inventory = Bukkit.createInventory(null, CompactCrates.getInstance().getConfig().getInt("inventorySize"), CompactCrates.getInstance().getLanguageConfig().getString("firstInventoryName"));
 
         CompactCrates.getInstance().getChestConfig().getConfigurationSection("cratesTypes").getKeys(false).forEach(s -> {
@@ -56,10 +135,10 @@ public class InventoryManager implements Listener {
             }
 
             CompactCrates.getInstance().getLanguageConfig().getStringList("firstInventoryLore").forEach(s1 -> {
-                lore.add(s1.replace("%key%",  getCrateAmount(player.getUniqueId(), CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID")) + "").replace("&", "§"));
+                lore.add(s1.replace("%key%", getCrateAmount(player.getUniqueId(), CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".ID")) + "").replace("&", "§"));
             });
 
-            if (!CompactCrates.getInstance().getLanguageConfig().contains("leftClick")){
+            if (!CompactCrates.getInstance().getLanguageConfig().contains("leftClick")) {
                 CompactCrates.getInstance().getLanguageConfig().set("leftClick", "LeftClick OPEN");
                 CompactCrates.getInstance().getLanguageConfig().set("rightClick", "RightClick PREVIEW");
                 CompactCrates.getInstance().getLanguageConfig().set("middleClick", "MiddleClick Admin");
@@ -78,13 +157,25 @@ public class InventoryManager implements Listener {
             itemMeta.setLore(lore);
             itemStack.setItemMeta(itemMeta);
 
-            inventory.setItem(Integer.parseInt(CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".Slot")) ,itemStack);
+            inventory.setItem(Integer.parseInt(CompactCrates.getInstance().getChestConfig().getString("cratesTypes." + s + ".Slot")), itemStack);
         });
 
         player.openInventory(inventory);
     }
 
-    public void openSecondInventory(Player player, String crateID, String crateName) {
+    public static void openFirstInventory(Player player) {
+        if (CompactCrates.useFloodgate){
+            if (player.getName().startsWith(FloodgateApi.getInstance().getPlayerPrefix())){
+                openBedbedrockInv(player);
+            }else {
+                openJavaInv(player);
+            }
+        }else {
+            openJavaInv(player);
+        }
+    }
+
+    public static void openSecondInventory(Player player, String crateID, String crateName) {
         Inventory inventory = Bukkit.createInventory(null, 54, CompactCrates.getInstance().getLanguageConfig().getString("secondInventoryName").replace("%crate%", crateName).replace("&", "§"));
 
         for (int i = 0; i < 45; i++) {
@@ -140,7 +231,7 @@ public class InventoryManager implements Listener {
         player.openInventory(inventory);
     }
 
-    public void openSecondAdminInventory(Player player, String crateID, String crateName) {
+    public static void openSecondAdminInventory(Player player, String crateID, String crateName) {
         Inventory inventory = Bukkit.createInventory(null, 54, CompactCrates.getInstance().getLanguageConfig().getString("secondInventoryName").replace("%crate%", crateName).replace("&", "§") + " §4(Admin)");
 
         for (int i = 0; i < 45; i++) {
@@ -350,7 +441,12 @@ public class InventoryManager implements Listener {
                 if (event.getView().getBottomInventory().equals(event.getClickedInventory())) return;
 
                 if (event.getCurrentItem().getItemMeta().getLocalizedName().equals("back")) {
-                    openFirstInventory(player);
+
+                    if (player.getName().startsWith(FloodgateApi.getInstance().getPlayerPrefix())){
+                        player.closeInventory();
+                    }else {
+                        openJavaInv(player);
+                    }
                 }
             }
 

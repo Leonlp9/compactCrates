@@ -46,6 +46,12 @@ leftClick: '&e&oLeft click&e to open the Crate'
 rightClick: '&e&oRight click&e to see the Rewards'
 middleClick: '&e&oMiddle click&e to edit the crate (Admin)'
 
+bedrockOpen: '&aCrate Open'
+bedrockPreview: '&aCrate Preview'
+bedrockBack: '&aBack'
+
+keyName: '&e&lKey'
+
 back: '&e&lBack'
 
 changeMaterial: '&e&o&lChange the Material'

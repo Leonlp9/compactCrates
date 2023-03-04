@@ -34,6 +34,8 @@ public final class CompactCrates extends JavaPlugin {
     private static MySql mySql;
     public static boolean useMysql = false;
 
+    public static boolean useFloodgate = false;
+
     public void onEnable(){
         instance = this;
 
@@ -79,6 +81,14 @@ public final class CompactCrates extends JavaPlugin {
         if (Bukkit.getPluginManager().isPluginEnabled("PlaceholderAPI")) {
             new UserPlaceHolders().register();
             getLogger().info("PlaceholderAPI found. Placeholders registered.");
+        }
+
+        //floodgate
+        if (Bukkit.getPluginManager().isPluginEnabled("floodgate")) {
+            getLogger().info("Floodgate found. Floodgate support enabled.");
+            useFloodgate = true;
+        }else {
+            getLogger().info("Floodgate is not installed. Floodgate support disabled.");
         }
 
         // Spawn Crates
